@@ -3,6 +3,7 @@ SimpleRepublic {
 
 	var <broadcastAddr, <republicName;
 	var <addrs, <nickname;
+	var <>fixedLangPort = true;
 	var oldAddrs, task, resp, broadcastWasOn;
 	
 	classvar <>default;
@@ -88,7 +89,7 @@ SimpleRepublic {
 			{ |t,r,	msg, replyAddr|
 				var otherNick = msg[1], addr;
 				if(addrs.at(otherNick).isNil) {
-					addr = NetAddr(replyAddr.addr.asIPString, 57120);
+					addr = NetAddr(replyAddr.addr.asIPString, replyAddr.port);
 					addrs.put(otherNick, addr); // already put it here
 				}
 		}).add;
@@ -97,7 +98,7 @@ SimpleRepublic {
 	makeSender {
 		var routine = Routine {
 			inf.do { |i|
-				broadcastAddr.sendMsg(republicName, nickname);
+				broadcastAddr.do(_.sendMsg(republicName, nickname));
 				if(i % 3 == 0) { this.assemble };
 				nil.yield;
 			}
@@ -116,7 +117,7 @@ SimpleRepublic {
 	}
 
 	checkLangPort {
-		if(NetAddr.langPort != 57120) { 
+		if(fixedLangPort and: { NetAddr.langPort != 57120 }) { 
 			Error(
 				"Can't join Republic: please try and restart SuperCollider"
 				" to get langPort 57120."
