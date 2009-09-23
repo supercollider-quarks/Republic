@@ -1,0 +1,133 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title></title>
+<meta name="Generator" content="Cocoa HTML Writer">
+<meta name="CocoaVersion" content="949.54">
+<style type="text/css">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 42.0px Monaco; color: #bf0000}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Monaco; color: #000000; min-height: 16.0px}
+p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Monaco; color: #bf0000}
+p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Monaco; color: #606060}
+p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 7.0px Monaco; color: #000000; min-height: 10.0px}
+p.p6 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Monaco; color: #000000}
+p.p7 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Monaco; color: #0000bf}
+p.p8 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Monaco; color: #000000; min-height: 19.0px}
+p.p9 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Monaco; color: #bf0000}
+p.p10 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #bf0000}
+p.p11 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000; min-height: 12.0px}
+p.p12 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000}
+p.p13 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #0000bf}
+p.p14 {margin: 0.0px 0.0px 0.0px 0.0px; font: 10.0px Monaco; color: #000000; min-height: 14.0px}
+span.s1 {font: 6.0px Monaco}
+span.s2 {color: #606060}
+span.s3 {color: #000000}
+span.s4 {color: #0000bf}
+span.s5 {color: #007300}
+span.Apple-tab-span {white-space:pre}
+</style>
+</head>
+<body>
+<p class="p1"><span class="s1">//</span>Joining the Republic</p>
+<p class="p2"><br></p>
+<p class="p3">// The class Republic allows a very simple organisation of</p>
+<p class="p3">// cooperation in changing groups over the local network.</p>
+<p class="p3">// It automatically administers each member's address and server</p>
+<p class="p3">// More details: see <a href="SimpleRepublic.html">SimpleRepublic</a> and <a href="Republic.html">Republic</a> helpfiles</p>
+<p class="p2"><br></p>
+<p class="p3">/////////////////////////////////////////////////////////////////</p>
+<p class="p3">// Step 1: is it installed?</p>
+<p class="p3"><span class="s2">"Republic"</span><span class="s3">.include; </span>// ... and recompile if needed.</p>
+<p class="p2"><br></p>
+<p class="p3">/////////////////////////////////////////////////////////////////</p>
+<p class="p3">// Step 2: one person creates a local network, all the others join it.</p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p3">/////////////////////////////////////////////////////////////////</p>
+<p class="p3">// Step 3: someone finds out the broadcast IP (it's the same for everyone)</p>
+<p class="p3">// usually this works:</p>
+<p class="p4"><span class="s3"><span class="Apple-converted-space">      </span>unixCmd(</span>"ifconfig | grep broadcast | awk '{print $NF}'"<span class="s3">)<span class="Apple-converted-space"> </span></span></p>
+<p class="p3">// Or: "ifconfig" in Terminal and search the printout for "broadcast"</p>
+<p class="p5"><br></p>
+<p class="p5"><br></p>
+<p class="p5"><br></p>
+<p class="p3">/////////////////////////////////////////////////////////////////</p>
+<p class="p3">// Step 4: for everyone the same: make a republic with the broadcast IP.</p>
+<p class="p6">r = <span class="s4">Republic</span>(<span class="s4">NetAddr</span>(<span class="s2">"169.254.255.255"</span>, 57120)).makeDefault;</p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p3">/////////////////////////////////////////////////////////////////</p>
+<p class="p3">// Step 5: let's give every person a unique nickname (symbol),</p>
+<p class="p3">// <span class="Apple-converted-space">        </span>and an id a unique integer between (0..31).</p>
+<p class="p3">// then join the Republic:</p>
+<p class="p3"><span class="s3">r.join(</span><span class="s5">\yourName</span><span class="s3">, 0); </span>//&lt;- your unique id here, and your name over there.</p>
+<p class="p2"><br></p>
+<p class="p3">// you see the members appear on the post window.</p>
+<p class="p2"><br></p>
+<p class="p3"><span class="s3">r.addrs; </span>// see whose addresses are collected already</p>
+<p class="p3"><span class="s3">r.servers; </span>// see whose servers are collected already</p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p3">/////////////////////////////////////////////////////////////////</p>
+<p class="p3">// Step 6:<span class="Apple-converted-space">  </span>to share your code, evaluate the following:</p>
+<p class="p3">// (use tab to chat from chat window)</p>
+<p class="p2"><br></p>
+<p class="p6">(</p>
+<p class="p7"><span class="s3"><span class="Apple-tab-span">	</span>g = </span>OSCresponder<span class="s3">(</span>nil<span class="s3">, </span><span class="s5">'/hist'</span><span class="s3">, {</span>|t,r,msg|<span class="s3"><span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s4">History</span>.enter(msg[2].asString, msg[1])<span class="Apple-converted-space"> </span></p>
+<p class="p6"><span class="Apple-tab-span">	</span>}).add;<span class="Apple-converted-space"> <span class="Apple-tab-span">	</span></span></p>
+<p class="p2"><span class="Apple-tab-span">	</span></p>
+<p class="p6"><span class="Apple-tab-span">	</span><span class="s4">History</span>.start;</p>
+<p class="p6"><span class="Apple-tab-span">	</span><span class="s4">History</span>.makeWin;</p>
+<p class="p6"><span class="Apple-tab-span">	</span><span class="s4">History</span>.forwardFunc = { <span class="s4">|code|</span></p>
+<p class="p6"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>r.send(<span class="s5">\all</span>, <span class="s5">'/hist'</span>, r.nickname, code)<span class="Apple-converted-space"> </span></p>
+<p class="p6"><span class="Apple-tab-span">	</span>};</p>
+<p class="p6"><span class="Apple-tab-span">	</span><span class="s4">History</span>.localOff;</p>
+<p class="p6"><span class="Apple-tab-span">	</span><span class="s4">EZRepublicGui</span>(republic: r);</p>
+<p class="p6">);</p>
+<p class="p2"><br></p>
+<p class="p8"><br></p>
+<p class="p9">/////////////////// Welcome ///////////////////////</p>
+<p class="p8"><br></p>
+<p class="p8"><br></p>
+<p class="p8"><br></p>
+<p class="p10">// what to do now?</p>
+<p class="p11"><br></p>
+<p class="p10">// e.g. share a SynthDef with all participants</p>
+<p class="p12">(</p>
+<p class="p13">SynthDef<span class="s3">(</span><span class="s5">\xxy</span><span class="s3">, {</span>|out, sustain = 1, freq = 440|</p>
+<p class="p12"><span class="Apple-tab-span">	</span><span class="s4">var</span> env = <span class="s4">Line</span>.kr(0.1, 0, sustain, doneAction: 2);</p>
+<p class="p12"><span class="Apple-tab-span">	</span><span class="s4">var</span> son = <span class="s4">SinOsc</span>.ar(freq * [1, 1.2, 1.5, 1.7]).sum;</p>
+<p class="p12"><span class="Apple-tab-span">	</span><span class="s4">Out</span>.ar(out, son);</p>
+<p class="p12">}).share;</p>
+<p class="p12">)</p>
+<p class="p11"><br></p>
+<p class="p10">// and send a synth to everyone:</p>
+<p class="p12">(server: r.servers, instrument: <span class="s5">\xxy</span>, freq: exprand(300, 1000)).play;</p>
+<p class="p11"><br></p>
+<p class="p10">// or to a random member:</p>
+<p class="p12">(server: r.servers.choose, instrument: <span class="s5">\xxy</span>, freq: exprand(300, 1000)).play;</p>
+<p class="p11"><br></p>
+<p class="p10">// For documentation of the session in the end:</p>
+<p class="p12"><span class="s4">History</span>.document;</p>
+<p class="p11"><br></p>
+<p class="p11"><br></p>
+<p class="p10">// For quitting republic:</p>
+<p class="p12">(</p>
+<p class="p13">History<span class="s3">.stop;</span></p>
+<p class="p12">g.remove;</p>
+<p class="p12">r.leave;</p>
+<p class="p12">);</p>
+<p class="p11"><br></p>
+<p class="p10">// when you just end SC or recompile, you will leave automatically.</p>
+<p class="p11"><br></p>
+<p class="p11"><br></p>
+<p class="p11"><br></p>
+<p class="p11"><br></p>
+<p class="p11"><br></p>
+<p class="p14"><br></p>
+<p class="p14"><br></p>
+</body>
+</html>
