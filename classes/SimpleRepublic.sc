@@ -2,9 +2,10 @@
 SimpleRepublic {
 
 	var <broadcastAddr, <republicName;
-	var <addrs, <nickname;
+	var <addrs, <nickname, <nameList;
 	var <>fixedLangPort = true;
-	var oldAddrs, task, resp, broadcastWasOn;
+	var <>verbose = false, <>private = false; // use this later to delegate traffic
+	var <oldAddrs, task, resp, broadcastWasOn;
 	
 	classvar <>default;
 	
@@ -17,6 +18,7 @@ SimpleRepublic {
 	init {
 		addrs = ();
 		oldAddrs = ();
+		nameList = List.new;
 	}
 	
 	join { |name|
@@ -44,8 +46,31 @@ SimpleRepublic {
 	}
 	
 	send { |name ... args|
-		this.prSendWithDict(addrs, name, args)
+		this.prSendWithDict(addrs, name, [args])
 	}
+	
+	
+	// need to decide what to send to server or client.
+	// probably better a class that does this.
+	// 
+	
+	// compatibility with Collective
+	
+	myIP {
+		^this.myAddr.hostname.asIPString
+	}
+	
+	myAddr {
+		^addrs[nickname]
+	}
+	
+	channel { ^("/" ++ republicName).asSymbol }
+	
+	/*sendToAll { arg ... args;
+		broadcastAddr.listSendMsg(args)
+	}*/
+	// send my name with every message?
+	// check rest of send interface: sendToIndex etc.
 	
 	
 	// private implementation
@@ -68,11 +93,15 @@ SimpleRepublic {
 	}
 	
 	addParticipant { |key, addr|
-		addrs.put(key, addr); 
+		addrs.put(key, addr);
+		if(nameList.includes(key).not) {
+			nameList.add(key);
+		};
 	}
 	
 	removeParticipant { |key|
 		addrs.removeAt(key);
+		nameList.remove(key);
 	}
 	
 	switchBroadcast { |flag|
@@ -128,20 +157,22 @@ SimpleRepublic {
 	// if name == \all, send to each item in the dict.
 	// otherwise send to each of the given names
 	
-	prSendWithDict { |dict, names, args|
-	
+	prSendWithDict { |dict, names, messages, latency|
+		names = names ? nickname; // send to myself if none is given
+		if(verbose) { "sent messages to: %.\nmessages: %\nlatency: %\n"
+				.postf(names, messages, latency)};
 		if(names == \all) {
-			dict.do { |recv| recv.sendMsg(*args) }
+			dict.do { |recv| recv.sendBundle(latency, *messages) }
 		} {
 			names.asArray.do { |name|
 				var recv = dict.at(name);
 				if(recv.isNil) { 
 					"% is currently absent.\n".postf(name)
 				} {
-					recv.sendMsg(*args)
+					recv.sendBundle(latency, *messages)
 				};
 			}
 		}
 	}
-	
 }
+
