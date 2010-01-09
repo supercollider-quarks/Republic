@@ -119,6 +119,8 @@ Republic : SimpleRepublic {
 		};
 			
 		servers.put(name, server);
+		server.sendBundle(nil, ['/error', -1],['/notify', 1],['/error', -2]);
+		
 		if(verbose) { "Republic(%): added server %\n".postf(nickname, name); };
 		// send all synthdefs to the new server
 		synthDefs.do { |synthDef| 

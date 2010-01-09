@@ -28,7 +28,7 @@ SimpleRepublic {
 		this.leave;
 		this.switchBroadcast(true);
 		
-		nickname = name ? nickname; // sure? nickname change..
+		nickname = name ? nickname;
 		
 		this.makeResponder;
 		this.makeSender;
@@ -38,7 +38,7 @@ SimpleRepublic {
 	
 	leave {
 		task.stop;
-		resp.remove;
+		resp !? { resp.remove };
 		addrs.do(_.disconnect);
 		addrs = ();
 		this.switchBroadcast(false);
