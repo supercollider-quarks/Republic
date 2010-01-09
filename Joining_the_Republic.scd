@@ -26,6 +26,7 @@
 
 //________________________Step 2_______________________________
 // one person creates a local network, all the others join it.
+// Make sure: are you in the same network?
 
 
 //________________________Step 3_______________________________

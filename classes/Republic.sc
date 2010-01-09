@@ -83,7 +83,7 @@ Republic : SimpleRepublic {
 	}
 		
 	addServer { | name, addr, port |
-		var server;
+		var server, options;
 		server = Server.named.at(name);
 
 		if(server.isNil) {
@@ -97,7 +97,12 @@ Republic : SimpleRepublic {
 			server.tree = setAllocator;
 			
 			if(name == nickname) {
-				"my own.".postln;	
+				"my own.".postln;
+				options = Server.default.options.copy;
+				options.numAudioBusChannels = 128 * 32;
+				options.numControlBusChannels = 4096 * 32;
+				options.memSize = 8192 * 32;
+				server.options = options;
 				server.boot;
 				defer { server.makeWindow };
 			} {
@@ -141,8 +146,7 @@ Republic : SimpleRepublic {
 		var dict = SynthDesc.readFile(stream, false, lib.synthDescs);
 		var args = [\instrument, name];
 		
-		this.manipulateSynthDesc(name);
-		
+		try { this.manipulateSynthDesc(name) };
 		synthDescs.put(name, lib.at(name));
 		
 		lib.servers.do({ |server|
@@ -153,15 +157,16 @@ Republic : SimpleRepublic {
 		dict.at(name).controls.do { |ctl| 
 			args = args.add(ctl.name.asSymbol).add(ctl.defaultValue.round(0.00001))
 		};
-		"// % SynthDef \"%\" added:\n".postf(nickname, name);
+		"// SynthDef \"%\" added:\n".postf(name);
 		().putPairs(args).postcs;
 		
 	}
 	
 	manipulateSynthDesc { | name |
 		var synthDesc = SynthDescLib.at(name);
+		var ctl = synthDesc.controlNames;
 		synthDesc !? {
-			if(synthDesc.controlNames.includes("where").not) {
+			if(ctl.isNil or: { synthDesc.controlNames.includes("where").not }) {
 				//"adding where..".postln;
 				synthDesc.controlNames = synthDesc.controlNames.add("where");
 				synthDesc.controls = synthDesc.controls.add(
@@ -292,6 +297,14 @@ RepublicServer {
 		} {
 			republic.addSynthDef(this);
 		}
+	}
+	
+	*unshare { |name|
+		var republic = republic ? Republic.default;
+		if(republic.notNil) { 
+			republic.removeSynthDef(this)
+		}
+		
 	}
 
 }
