@@ -17,7 +17,6 @@ Blackboard {
 		resp = 
 			[
 				OSCresponderNode(nil, '/blackboard', { |t, r, msg|
-					msg.postln;
 					if(msg[1] != id) {
 						this.trySetString(msg[2].asString);
 					};

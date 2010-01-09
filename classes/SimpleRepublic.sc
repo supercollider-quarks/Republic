@@ -3,9 +3,9 @@ SimpleRepublic {
 
 	var <broadcastAddr, <republicName;
 	var <addrs, <nickname, <nameList;
-	var <>fixedLangPort = true;
+	var <>fixedLangPort = true, <>graceCount = 16;
 	var <>verbose = false, <>private = false; // use this later to delegate traffic
-	var <oldAddrs, task, resp, broadcastWasOn;
+	var task, resp, broadcastWasOn, <presence;
 	
 	classvar <>default;
 	
@@ -17,8 +17,8 @@ SimpleRepublic {
 	
 	init {
 		addrs = ();
-		oldAddrs = ();
 		nameList = List.new;
+		presence = ();
 	}
 	
 	join { |name|
@@ -28,7 +28,7 @@ SimpleRepublic {
 		this.leave;
 		this.switchBroadcast(true);
 		
-		nickname = name ? nickname;
+		nickname = name ? nickname; // sure? nickname change..
 		
 		this.makeResponder;
 		this.makeSender;
@@ -41,7 +41,6 @@ SimpleRepublic {
 		resp.remove;
 		addrs.do(_.disconnect);
 		addrs = ();
-		oldAddrs = ();
 		this.switchBroadcast(false);
 	}
 	
@@ -77,19 +76,18 @@ SimpleRepublic {
 
 	
 	assemble {
-		var deadAddr = this.getDifference(oldAddrs, addrs);
-		var newAddr = this.getDifference(addrs, oldAddrs);
-		
-		deadAddr.keysDo { |key|
-			this.removeParticipant(key);
-			("% has just left the building.".format(key)).postln;
+		presence.keys.do { |key|
+			var newVal = presence[key] - 1;
+			
+			if(newVal < 0) {
+				this.removeParticipant(key);
+				presence.removeAt(key);
+				(" --- % has just left the building. --->".format(key)).postln;
+			} { 
+				presence.put(key, newVal)
+			}
 		};
-		newAddr.keysValuesDo { |key, addr|
-			this.addParticipant(key, addr);
-			("% has joined the Republic.".format(key)).postln;
-		};
-		
-		oldAddrs = addrs.copy;
+		if(verbose) { presence.postln };
 	}
 	
 	addParticipant { |key, addr|
@@ -102,6 +100,7 @@ SimpleRepublic {
 	removeParticipant { |key|
 		addrs.removeAt(key);
 		nameList.remove(key);
+		presence.removeAt(key);
 	}
 	
 	switchBroadcast { |flag|
@@ -119,8 +118,10 @@ SimpleRepublic {
 				var otherNick = msg[1], addr;
 				if(addrs.at(otherNick).isNil) {
 					addr = NetAddr(replyAddr.addr.asIPString, replyAddr.port);
-					addrs.put(otherNick, addr); // already put it here
-				}
+					this.addParticipant(otherNick, addr);
+					(" ---> % has joined the Republic. ---".format(otherNick)).postln;
+				};
+				presence.put(otherNick, graceCount);
 		}).add;
 	}
 	
@@ -128,13 +129,13 @@ SimpleRepublic {
 		var routine = Routine {
 			inf.do { |i|
 				broadcastAddr.do(_.sendMsg(republicName, nickname));
-				if(i % 3 == 0) { this.assemble };
+				this.assemble;
 				nil.yield;
 			}
 		};
 		routine.next; // send once immediately
 		task.stop;
-		task = SkipJack(routine, 2.0, name: republicName);
+		task = SkipJack(routine, 1.0, name: republicName);
 	}
 	
 	getDifference { |thisDict, thatDict|

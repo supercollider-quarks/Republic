@@ -59,7 +59,7 @@ fork {
  
 //________________________Step 2_______________________________
 (
-var myIP = "192.168.178.34"; // <--- put it here!
+var myIP = "192.168.178.57"; // <--- put it here!
 var id = 10000.rand;
 var ok = false;
 if(NetAddr.langPort != 57120) { Error("restart supercollider. langport != 57120").throw };
