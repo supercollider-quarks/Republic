@@ -5,27 +5,51 @@ use tab to send chat message
 */
 
 EZRepublicGui {
-	var <republic, <view, <listView, <chatViewWrite, <chatView, task, resp;
+	var <republic, <view, <nameView, <idView, <privateBtn, 
+	<activeViews, <listView, <chatViewWrite, <chatView, task, resp;
 	
-	*new { |parent, bounds, republic|
-		^super.new.init(parent, bounds, republic)
+	*new { |parent, bounds, republic, numCitizens = 12|
+		^super.new.init(parent, bounds, republic, numCitizens)
 	}
 	
-	init {|parent, bounds, aRepublic|
-		var width;
+	init {|parent, bounds, aRepublic, numCitizens|
+		var width, lifeComp;
 		republic = aRepublic;
-		bounds = bounds ?? { Rect(0, 500, 230, 300) };
+		bounds = bounds ?? { Rect(0, 500, 230, 600) };
 		parent = parent ?? { this.makeWindow(bounds.width, bounds.height) };
 		
 		width = bounds.width - 8;
 		view = CompositeView(parent, Rect(0, 0, width, bounds.height)).resize_(5);
 		view.addFlowLayout;
-		listView = ListView(view, Rect(0, 0, width, bounds.height * (1/3))).resize_(5);
+		
+		nameView = StaticText(view, Rect(0,0, 90, 20))			.string_("<name>");
+
+		idView = StaticText(view, Rect(0,0, 30, 20))
+			.string_("<id>");
+
+		StaticText(view, Rect(0,0, 40, 20))
+			.string_("private:");
+		
+		privateBtn = Button(view, Rect(0,0, 40, 20))
+			.states_([["no"], ["yes"]])
+			.action_({ |b| republic.private = b.value > 0 });
+		
+		listView = ListView(view, Rect(0, 0, width * 0.5 - 6, numCitizens * 18)).resize_(5);
 		listView.background_(Color.clear);
 		listView.hiliteColor_(Color.green(alpha:0.6));
+
+		lifeComp = CompositeView(view, Rect(0, 0, width * 0.5 - 6, numCitizens * 18)).resize_(3);
+		lifeComp.addFlowLayout(0@0, 1@1);
+		
+		activeViews = numCitizens.collect { 
+			StaticText(lifeComp, Rect(0,0, width * 0.5 - 6 - 50.rand, 17))
+				.background_(Color(0.1, 0.7, 0.1));
+		};
+		
+		view.decorator.shift(0, 5);
 		
 		chatViewWrite = TextView(view, Rect(0, 0, width, 24)).resize_(8);
-		chatView = TextView(view, Rect(0, 0, width, bounds.height * (2/3) - 28)).resize_(8);
+		chatView = TextView(view, Rect(0, 0, width, bounds.height - (numCitizens + 3.5 * 18))).resize_(8);
 		
 		chatViewWrite.font = Font("Helvetica", 14);
 		chatView.font = Font("Helvetica", 12);
@@ -46,12 +70,23 @@ EZRepublicGui {
 				} 
 			});
 		
-		this.startChatResponder;
-		
+		this.startChatResponder;	
 	}
 	
 	updateViews {
-		listView.items = republic.addrs.keys.asArray.sort;
+		var names = republic.addrs.keys.asArray.sort;
+		var width; 
+		
+		nameView.string = republic.nickname.asString;
+		idView.string = republic.clientID;
+		privateBtn.value = republic.private.binaryValue; 
+		 
+		listView.items = names;
+		
+		activeViews.do { |v, i|
+			width = (republic.presence[names[i]] ? 0 / republic.graceCount * 100);
+			v.bounds_(v.bounds.width_(width));
+		}
 	}
 	
 	sendChat { |str|
