@@ -1,5 +1,5 @@
 GetMouseX {
-	var <>minval=0, <>maxval=1, <warp=0, <lag=0.2, <>server;
+	var <minval=0, <maxval=1, <warp=0, <lag=0.2, <server;
 	var <>action;
 	var <value;
 	var synth, resp;
@@ -12,7 +12,7 @@ GetMouseX {
 		var cmd = '/' ++ this.mouseClass.name ++ this.identityHash.abs;
 		value = minval;
 		if(server.serverRunning.not) { "server % not running".format(server.name).warn; ^this };
-		server.sendBundle(nil, ['/error', -1],['/notify', 1],['/error', -2]);
+		server.sendBundle(nil, ['/notify', 0],['/notify', 1]);
 		synth = { |updateRate = 5|
 			var mouse = this.mouseClass.kr(minval, maxval, warp, lag);
 			var change = HPZ2.kr(mouse) > 0;
@@ -38,9 +38,9 @@ GetMouseX {
 		synth.set(\updateRate, rate)
 	}
 	
-	cmdPeriod { this.stop; CmdPeriod.remove(this) }
+	cmdPeriod { this.prRemove; }
 	
-	stop { resp !? { resp.remove }; synth.removeDependant(this); synth.free;  }
+	stop {  this.prRemove; synth.free;  }
 		
 	mouseClass {
 		^MouseX
@@ -48,6 +48,12 @@ GetMouseX {
 	
 	update { |who, what|
 		if(what == \n_end) { this.run };
+	}
+	
+	prRemove {
+		resp !? { resp.remove };
+		synth.removeDependant(this); 
+		CmdPeriod.remove(this);
 	}
 }
 
