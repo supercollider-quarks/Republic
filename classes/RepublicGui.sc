@@ -13,9 +13,15 @@ EZRepublicGui {
 	}
 	
 	init {|parent, bounds, aRepublic, numCitizens|
-		var width, lifeComp;
-		republic = aRepublic;
-		bounds = bounds ?? { Rect(0, 500, 230, 600) };
+		var width = 230; 
+		var height = numCitizens * 18 + 240;
+		var lifeComp;
+		republic = aRepublic; 
+		
+		bounds = bounds ?? { 0@500 };
+		if (bounds.isKindOf( Point)) { 
+			bounds = Rect(bounds.x, bounds.y, 0, 0).setExtent(width, height);
+		};
 		parent = parent ?? { this.makeWindow(bounds.width, bounds.height) };
 		
 		width = bounds.width - 8;
@@ -49,7 +55,7 @@ EZRepublicGui {
 		view.decorator.shift(0, 5);
 		
 		chatViewWrite = TextView(view, Rect(0, 0, width, 24)).resize_(8);
-		chatView = TextView(view, Rect(0, 0, width, bounds.height - (numCitizens + 3.5 * 18))).resize_(8);
+		chatView = TextView(view, Rect(0, 0, width, 170)).resize_(8);
 		
 		chatViewWrite.font = Font("Helvetica", 14);
 		chatView.font = Font("Helvetica", 12);
@@ -118,7 +124,7 @@ EZRepublicGui {
 	}
 	
 	makeWindow { |width, height|
-		^Window.new(republic.republicName.asString, Rect(30, 500, width, height)).front
+		^Window.new(republic.republicName.asString, Rect(30, 500, width, height), false).front
 	}
 	
 	
