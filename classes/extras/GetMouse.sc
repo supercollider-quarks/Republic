@@ -1,25 +1,25 @@
-GetMouseX {
-	var <minval=0, <maxval=1, <warp=0, <lag=0.2, <server;
-	var <>action;
-	var <value;
+
+GetValue {
+	var <ugenFunc, <server, <value;
 	var synth, resp;
-	
-	*new { |minval=0, maxval=1, warp=0, lag=0.2, server|
-		^super.newCopyArgs(minval, maxval, warp, lag, server ? Server.default).run
+	var <>action;
+
+	*new { |ugenFunc, server|
+		^super.newCopyArgs(ugenFunc, server ? Server.default).run
 	}
 	
 	run {
-		var cmd = '/' ++ this.mouseClass.name ++ this.identityHash.abs;
-		value = minval;
+		var cmd = "/getValue_" ++ this.identityHash.abs;
+		value = 0;
 		if(server.serverRunning.not) { "server % not running".format(server.name).warn; ^this };
 		server.sendBundle(nil, ['/notify', 0],['/notify', 1]);
 		synth = { |updateRate = 5|
-			var mouse = this.mouseClass.kr(minval, maxval, warp, lag);
-			var change = HPZ2.kr(mouse) > 0;
+			var source = ugenFunc.value(this);
+			var change = HPZ2.kr(source) > 0;
 			SendReply.kr(
 						Impulse.kr(updateRate) * change + Impulse.kr(0), 
 						cmd, 
-						mouse
+						source
 					);
 		}.play(server);
 		synth.register;
@@ -30,8 +30,6 @@ GetMouseX {
 		});
 		resp.add;
 		CmdPeriod.add(this);
-		
-	
 	}
 	
 	rate_ { |rate|
@@ -41,10 +39,6 @@ GetMouseX {
 	cmdPeriod { this.prRemove; }
 	
 	stop {  this.prRemove; synth.free;  }
-		
-	mouseClass {
-		^MouseX
-	}
 	
 	update { |who, what|
 		if(what == \n_end) { this.run };
@@ -55,10 +49,26 @@ GetMouseX {
 		synth.removeDependant(this); 
 		CmdPeriod.remove(this);
 	}
+		
+}
+
+
+GetMouseX : GetValue {
+	var <minval=0, <maxval=1, <warp=0, <lag=0.2;
+	
+	*new { |minval=0, maxval=1, warp=0, lag=0.2, server|
+		^super.new({ this.mouseClass.kr(minval, maxval, warp, lag) }, server).run
+	}
+	
+	*mouseClass {
+		^MouseX
+	}
+	
 }
 
 GetMouseY : GetMouseX {
-	mouseClass {
+	*mouseClass {
 		^MouseY
 	}
 }
+
