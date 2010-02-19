@@ -81,13 +81,20 @@ EZRepublicGui {
 	
 	updateViews {
 		var names = republic.addrs.keys.asArray.sort;
+		var idString = "", showNames; 
 		var width; 
+		if (republic.respondsTo(\allIDs)) { 
+			idString = republic.clientID ? idString;
+			showNames = names.collect { |key| 
+				key ++ " : " ++ republic.allIDs[key]
+			};
+		} { showNames = names };
 		
-		nameView.string = republic.nickname.asString;
-		idView.string = republic.clientID;
+		nameView.string = (republic.nickname ? "<name>").asString;
+		idView.string = idString;
 		privateBtn.value = republic.private.binaryValue; 
 		 
-		listView.items = names;
+		listView.items = showNames;
 		
 		activeViews.do { |v, i|
 			width = (republic.presence[names[i]] ? 0 / republic.graceCount * 100);

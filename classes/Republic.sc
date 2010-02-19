@@ -1,18 +1,22 @@
 
 Republic : SimpleRepublic {
+	classvar <maxID = 31;
 
 	var <clientID, <serverPort = 57109;
 	var <servers, <synthDefs, <synthDescs, <>latency;
 	var <republicServer;
 	var <synthDefResp, synthDefSendCmd;
 	var setAllocator;
+	var <allIDs;
 	
+	var <>usesRandIDs = true;
 	
 	init {
 		super.init;
 		servers = ();
 		synthDefs = ();
 		synthDescs = ();
+		allIDs = ();
 		synthDefSendCmd =  republicName.asString ++ "/synthDef";
 		
 		setAllocator = { |serv| // better take this one, we use one for all
@@ -21,33 +25,48 @@ Republic : SimpleRepublic {
 		
 	}
 	
-	join { | nickname, argClientID = 0, argServerPort = 57110 |
+	join { | name, argClientID, argServerPort |
 		
-		super.join(nickname);
-		
-		clientID = argClientID;
-		serverPort = argServerPort;
-		
-		republicServer = RepublicServer(this, clientID); // interface to the event system
-		
-		synthDefResp = OSCresponderNode(nil, synthDefSendCmd, { | t,r,msg |
-			var name = msg[1];
-			var bytes = msg[2];
-			this.storeRemoteSynthDef(name, bytes)
-		}).add;
-		
-		
+		if (this.nameIsFree(name)) { 
+				// set clientID first so statusFunc call works
+			clientID = argClientID ?? { this.freeID };
+			super.join(name);
+
+			serverPort = argServerPort ? serverPort;
+			
+			republicServer = RepublicServer(this, clientID); // interface to the event system
+			
+			synthDefResp = OSCresponderNode(nil, synthDefSendCmd, { | t,r,msg |
+				var name = msg[1];
+				var bytes = msg[2];
+				this.storeRemoteSynthDef(name, bytes)
+			}).add;
+		};
+	}
+
+	assemble {
+		super.assemble; 
+				// make servers if clientID was added, 
+				// and server is missing
+		if (clientID.notNil) { 
+			presence.keys.do { |key|
+				var serv = servers[key];
+				if (serv.isNil) { this.addServer(key, addrs[key]) }
+			};
+		}
 	}
 	
-	leave {
+	leave { |free = false| 
 		synthDefResp.remove;
 		servers.do(this.removeServer(_));
 		try { servers.at(nickname).quit };
+			// quit all my nodes on the server if possible? 
+		servers.do { }; 
 		servers = ();
-		super.leave;
+		clientID = nil; 
+		super.leave(free);	// keep lurking by default
 	}
-		
-		
+			
 	sendServer { |name ... args|
 		// "send server %\nmessages: %\n".postf(name, [args]);
 		this.prSendWithDict(servers, name, [args], latency)
@@ -68,18 +87,44 @@ Republic : SimpleRepublic {
 		synthDefs.removeAt(name);
 		// maybe remove all synthDescs for everyone?
 	}
-	
-		
+			
 	// private implementation
 	
-	addParticipant { | key, addr |
-		addrs.put(key, addr); 
-		this.addServer(key, addr);
+	freeID { 
+		var res;
+		if (usesRandIDs) { 
+			res = (0..maxID).removeAll(allIDs.keys).choose;
+		} { 
+			res = (0 .. maxID).detect { |i| allIDs.includes(i).not };
+		}; 
+		if (res.isNil) { 
+			warn("Republic: no more free clientIDs!"); 
+			^nil	
+		} { ^res }
 	}
-	
+
+	addParticipant { | key, addr, clID |
+		
+		addrs.put(key, addr); 
+		allIDs.put(key, clID);
+		
+		if (clientID.notNil) { 
+			this.addServer(key, addr);
+		}
+	}
+			
 	removeParticipant { | key |
 		addrs.removeAt(key);
+		allIDs.removeAt(key);
 		this.removeServer(key); 
+	}
+
+	statusFunc { 
+		if (nickname.notNil) { 
+			broadcastAddr.do(_.sendMsg(republicName, nickname, clientID)) 
+		};
+		
+		this.assemble; 
 	}
 		
 	addServer { | name, addr, port |
@@ -87,7 +132,7 @@ Republic : SimpleRepublic {
 		server = Server.named.at(name);
 
 		if(server.isNil) {
-			"new server: %\n".postf(name);
+			"\n Republic: new server added: %\n".postf(name);
 			addr = addr.addr.asIPString;
 			if(name == nickname) { addr = "127.0.0.1" }; // replace by loopback
 			port = port ?? { serverPort };
@@ -106,14 +151,14 @@ Republic : SimpleRepublic {
 				server.boot;
 				defer { server.makeWindow };
 			} {
-				"server % not my own, but assume running.\n".postf(name);
+				"	server % not my own, assume running.\n".postf(name);
 				server.serverRunning_(true);
 			};
 				
 			// not sure if compatible
 			server.latency = latency;
 		} {
-			"server % already there - fine.\n".postf(name);
+			"	server % already there - fine.\n".postf(name);
 			server.tree = setAllocator;
 			server.boot;
 		};

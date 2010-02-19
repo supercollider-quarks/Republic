@@ -69,10 +69,12 @@ Shout {
 		var colors = [Color.red, Color.green, Color.blue]; 
 		Task { 
 			n.do { |i| 
-				txtView.stringColor_(colors.wrapAt(i)); 
-				dt.wait 
+				try { 
+					txtView.stringColor_(colors.wrapAt(i)); 
+					dt.wait 
+				}
 			};
-			txtView.stringColor_(Color.red); // make sure we end black
+			try { txtView.stringColor_(Color.red) }; // make sure we end red
 		}.play(AppClock);
 	}
 

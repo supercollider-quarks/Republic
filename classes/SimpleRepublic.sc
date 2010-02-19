@@ -2,15 +2,20 @@
 SimpleRepublic {
 
 	var <broadcastAddr, <republicName;
-	var <addrs, <nickname, <nameList;
+	var <addrs, <nickname, <nameList, <joined = false;
 	var <>fixedLangPort = true, <>graceCount = 16;
 	var <>verbose = false, <>private = false; // use this later to delegate traffic
-	var task, resp, broadcastWasOn, <presence;
+	var <skip, <resp, <broadcastWasOn, <presence;
 	
 	classvar <>default;
 	
 	*new { |broadcastAddr, republicName = '/republic'|
 		^super.newCopyArgs(broadcastAddr, republicName).init
+	}
+	
+	*getBroadcastIPs { 
+		^unixCmdGetStdOut("ifconfig | grep broadcast | awk '{print $NF}'")
+			.split($\n).reject(_.isEmpty)
 	}
 	
 	makeDefault { default = this }
@@ -19,25 +24,56 @@ SimpleRepublic {
 		addrs = ();
 		nameList = List.new;
 		presence = ();
+
+		this.checkLangPort; 
+		this.makeResponder; 
+		this.makeSkip; 
+	}
+	
+	nameIsFree { |name| 
+		var nameIsUsed = addrs.keys.includes(name); 
+		
+		if (nameIsUsed) { 
+			if (name == nickname) { 
+				inform("Republic  %: You have already joined as %.\n"
+					.format(republicName, nickname));
+			} { 
+				inform("Republic %: nickname % is already in use!\n".format(name));
+			}
+		};
+		^nameIsUsed.not
 	}
 	
 	join { |name|
+		
+		if (this.nameIsFree(name)) { 		
+			nickname = name;
 	
-		this.checkLangPort;
-		
-		this.leave;
-		this.switchBroadcast(true);
-		
-		nickname = name ? nickname;
-		
-		this.makeResponder;
-		this.makeSender;
-		
+			this.statusFunc;
+			skip.play;
+					
+			fork { 0.5.wait; this.checkJoined }
+		};
 	}
 	
+	checkJoined { 
+		joined = addrs.keys.includes(nickname); 
+		if (joined.not) { 
+			warn("Nickname % has not joined Republic yet.\n"
+			"BroadcastAddr may be wrong!"
+				.format(nickname));
+		}
+	}
 	
-	leave {
-		task.stop;
+	leave { |free = false| 
+		nickname = nil;
+		joined = false;
+		if (free) { this.free }
+	}
+	
+	free { 
+		skip.stop; 
+		SkipJack.all.remove(skip);
 		resp !? { resp.remove };
 		addrs.do(_.disconnect);
 		addrs = ();
@@ -115,37 +151,34 @@ SimpleRepublic {
 	makeResponder {
 		resp = OSCresponderNode(nil, republicName, 
 			{ |t,r,	msg, replyAddr|
-				var otherNick = msg[1], addr;
+				var otherNick, otherID, addr;
+				
+				otherNick = msg[1]; 
+				otherID = msg[2]; 
+								
 				if(addrs.at(otherNick).isNil) {
 					addr = NetAddr(replyAddr.addr.asIPString, replyAddr.port);
-					this.addParticipant(otherNick, addr);
+										// pass on clientID in Republic
+					this.addParticipant(otherNick, addr, otherID);
 					(" ---> % has joined the Republic. ---".format(otherNick)).postln;
 				};
 				presence.put(otherNick, graceCount);
 		}).add;
 	}
 	
-	makeSender {
-		var routine = Routine {
-			inf.do { |i|
-				broadcastAddr.do(_.sendMsg(republicName, nickname));
-				this.assemble;
-				nil.yield;
-			}
-		};
-		routine.next; // send once immediately
-		task.stop;
-		task = SkipJack(routine, 1.0, name: republicName);
+	statusFunc { 
+		"SimpleRepublic:statusFunc runs.".postln;
+		if (nickname.notNil) { broadcastAddr.do(_.sendMsg(republicName, nickname)) };
+		this.assemble; 
 	}
 	
-	getDifference { |thisDict, thatDict|
-		var res = ();
-		thisDict.pairsDo {|key, val|
-			if(thatDict[key].isNil) { res.put(key, val) }
-		};
-		^res
-	}
+	makeSkip {
 
+		this.statusFunc; // do once immediately
+		skip.stop;
+		skip = SkipJack({ this.statusFunc }, 1.0, name: republicName);
+	}
+	
 	checkLangPort {
 		if(fixedLangPort and: { NetAddr.langPort != 57120 }) { 
 			Error(

@@ -12,45 +12,65 @@
 
 
 
- //________________________Step 1_______________________________
-// is it installed?
+ //________________________Step 1 - INSTALLING ___________________________
+// is it installed already?
 
-\Republic.asClass.notNil; // true? should be true.
+\Republic.asClass.notNil; // true if installed already.
 
 // if you have Quarks working, do this:
 "Republic".include; // ... and recompile if needed.
 
-// otherwise get the Republic folder and drop it into your system extension folder
+// if not, get the Republic folder and drop it into your system extensions folder
+
+unixCmd("open" + quote(Platform.userExtensionDir))
 
 
-
-//________________________Step 2_______________________________
-// one person creates a local network, all the others join it.
-// Make sure: are you in the same network?
+\Republic.asClass.notNil; // should be true now! 
 
 
-//________________________Step 3_______________________________
+//________________________Step 2 - AGREE ON A COMMON NETWORK________________
+// two options: 
+// * Take an existing network
+// * one person creates a local network, all the others join it.
+
+// * Make sure: are you in the same network?
+
+
+//________________________Step 3 - CONFIGURE/ENABLE BROADCASTING ____________
 // someone finds out the broadcast IP (it's the same for everyone)
-// usually this works:
+
+		// usually the first one is 192.168.178.255, or 192.168.0.255 - use this
+	Republic.getBroadcastIPs.postcs;
+
+		// do it at a lower level if necessary 
       unixCmd("ifconfig | grep broadcast | awk '{print $NF}'") 
-// Or: "ifconfig" in Terminal and search the printout for "broadcast"
+// Or do "ifconfig" in Terminal and search the printout for "broadcast"
+
+		// enable broadcasting in SC3
+	NetAddr.broadcastFlag = true;
 
 
-//________________________Step 4_______________________________
-// for everyone the same: make a republic with the broadcast IP.
+//________________________Step 4 - CREATE A REPUBLIC _______________________
+// for everyone the same: make a republic with the broadcast IP found in step 3
 	
 	r = Republic(NetAddr("192.168.178.255", 57120)).makeDefault;
+	
+		// optional: you can see other members' names and IDs 
+		// on a GUI, so you can choose a unique name. 
+	EZRepublicGui(republic: r);
 
-
-//________________________Step 5_______________________________
-// let's give every person a unique NICKNAME (symbol),
-//         and an ID - a unique integer between (0..31).
+//________________________Step 5 - JOIN THE REPUBLIC _______________________
+// let's give every person 
+//		a unique NICKNAME (a symbol),
+//     	and an ID - a unique integer between (0..31).
 // then join the Republic:
 
-	r.join(<\yourName>, <1>); //<- YOUR unique id here, and YOUR name over there.
+	// remove <> signs to make this line legal code,
+	// and put YOUR unique name and id here!
+	r.join(<\yourName>, <1>); 
 
 
-// save your file, e.g. under the name My_Republic.scd.
+///// NOW save your personal copy of this file, e.g. under the name My_Republic.scd.
 
 	// now the different participants should appear by themselves
 	// you see the members appear on the post window.
