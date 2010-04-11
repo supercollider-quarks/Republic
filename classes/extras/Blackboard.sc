@@ -132,8 +132,8 @@ Blackboard {
 			doc.stringColor = colors[\waiting];
 			doc.title = "if you like, write on blackboard";
 			doc.keyDownAction = {
-						wasChanged = true;
-						this.active;
+				wasChanged = true;
+				this.active;
 			};
 		};
 	}
@@ -178,7 +178,7 @@ BlackboardWindow {
 	
 	init { |title, string|
 		window = Window.new(title, Rect(100, 100, 500, 400));
-		textView = SCTextView(window, Rect(0, 0, 500, 400)).resize_(5);
+		textView = TextView(window, Rect(0, 0, 500, 400)).resize_(5);
 		layerView = UserView(window, Rect(0, 0, 500, 400));
 		window.front;
 	}

@@ -1,9 +1,10 @@
 
 SimpleRepublic {
+	classvar <>fixedLangPort = true; // this should be a classvar otherwise it can't be set before calling new...
 
 	var <broadcastAddr, <republicName;
 	var <addrs, <nickname, <nameList, <joined = false;
-	var <>fixedLangPort = true, <>graceCount = 16;
+	var<>graceCount = 16;
 	var <>verbose = false, <>private = false; // use this later to delegate traffic
 	var <skip, <resp, <broadcastWasOn, <presence;
 	
@@ -14,8 +15,17 @@ SimpleRepublic {
 	}
 	
 	*getBroadcastIPs { 
-		^unixCmdGetStdOut("ifconfig | grep broadcast | awk '{print $NF}'")
-			.split($\n).reject(_.isEmpty)
+		^Platform.case(
+			\osx, {
+				unixCmdGetStdOut("ifconfig | grep broadcast | awk '{print $NF}'")
+				.split($\n).reject(_.isEmpty) },
+			\windows, { // untested?
+				unixCmdGetStdOut("ifconfig | grep broadcast | awk '{print $NF}'")
+				.split($\n).reject(_.isEmpty) },
+			\linux, { // works at least on ubuntu and xandros...
+				unixCmdGetStdOut("/sbin/ifconfig | grep Bcast | awk 'BEGIN {FS = \"[ :]+\"}{print $6}'")
+				.split($\n).reject(_.isEmpty) }
+		);
 	}
 	
 	makeDefault { default = this }
@@ -45,7 +55,7 @@ SimpleRepublic {
 	}
 	
 	join { |name|
-		
+		name = name.asSymbol;
 		if (this.nameIsFree(name)) { 		
 			nickname = name;
 	

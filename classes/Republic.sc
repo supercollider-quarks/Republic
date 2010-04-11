@@ -26,15 +26,15 @@ Republic : SimpleRepublic {
 	}
 	
 	join { | name, argClientID, argServerPort |
-		
+		name = name.asSymbol;
 		if (this.nameIsFree(name)) { 
 				// set clientID first so statusFunc call works
 			clientID = argClientID ?? { this.freeID };
-			super.join(name);
-
 			serverPort = argServerPort ? serverPort;
 			
 			republicServer = RepublicServer(this, clientID); // interface to the event system
+			super.join(name);
+
 			
 			synthDefResp = OSCresponderNode(nil, synthDefSendCmd, { | t,r,msg |
 				var name = msg[1];
@@ -149,7 +149,7 @@ Republic : SimpleRepublic {
 				options.memSize = 8192 * 32;
 				server.options = options;
 				server.boot;
-				defer { server.makeWindow };
+				defer { try{ server.makeGui } };
 			} {
 				"	server % not my own, assume running.\n".postf(name);
 				server.serverRunning_(true);

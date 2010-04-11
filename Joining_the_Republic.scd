@@ -44,7 +44,10 @@ unixCmd("open" + quote(Platform.userExtensionDir))
 
 		// do it at a lower level if necessary 
       unixCmd("ifconfig | grep broadcast | awk '{print $NF}'") 
-// Or do "ifconfig" in Terminal and search the printout for "broadcast"
+// on linux
+      unixCmdGetStdOut("ifconfig | grep Bcast | awk 'BEGIN {FS = \"[ :]+\"}{print $6}'");
+
+// Or do "ifconfig" in Terminal and search the printout for "broadcast" or "Bcast"
 
 		// enable broadcasting in SC3
 	NetAddr.broadcastFlag = true;
@@ -52,8 +55,13 @@ unixCmd("open" + quote(Platform.userExtensionDir))
 
 //________________________Step 4 - CREATE A REPUBLIC _______________________
 // for everyone the same: make a republic with the broadcast IP found in step 3
-	
-	r = Republic(NetAddr("192.168.178.255", 57120)).makeDefault;
+
+// everyone on OSX, this will probably work fine:
+r = Republic(NetAddr("192.168.178.255", 57120)).makeDefault;
+
+// on Linux with SwingOSC, the language port sometimes jumps, so we use:
+Republic.fixedLangPort = false;
+r = Republic(NetAddrMP("192.168.1.255").ports_( (57120..57124) ) ).makeDefault;
 	
 		// optional: you can see other members' names and IDs 
 		// on a GUI, so you can choose a unique name. 
@@ -67,7 +75,9 @@ unixCmd("open" + quote(Platform.userExtensionDir))
 
 	// remove <> signs to make this line legal code,
 	// and put YOUR unique name and id here!
-	r.join(<\yourName>, <1>); 
+	// you can also leave out id and you will be assigned a random one
+
+	r.join( <\yourName>, <1> ); 
 
 
 ///// NOW save your personal copy of this file, e.g. under the name My_Republic.scd.
@@ -77,9 +87,6 @@ unixCmd("open" + quote(Platform.userExtensionDir))
 
 	r.addrs; // see whose addresses are collected already
 	r.servers; // see whose servers are collected already
-
-
-
 
 
 
@@ -97,8 +104,6 @@ Blackboard.new.start;
 // esp. linux and windows
 
 Blackboard.new.useDocument_(false).start;
-
-
 
 // to share your code, evaluate the following:
 // (use tab to chat from chat window)
