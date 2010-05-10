@@ -47,6 +47,7 @@ SharedServer : Server {
 	}
 	
 	freeAll { |hardFree = false| 
+		"SharedServer:freeAll...".postln; 
 		if (hardFree) { 
 			this.sendMsg("/g_freeAll", 0);
 			this.sendMsg("/clearSched");
@@ -55,4 +56,8 @@ SharedServer : Server {
 			myGroup.freeAll;
 		}
 	}
+}
+
++ Nil { 
+	asTarget { ^Server.default.asTarget }
 }
