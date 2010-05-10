@@ -13,7 +13,6 @@ p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
 p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Helvetica}
 p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Helvetica; min-height: 17.0px}
 span.s1 {color: #2b30fa}
-span.s2 {font: 14.0px Helvetica}
 span.Apple-tab-span {white-space:pre}
 </style>
 </head>
@@ -70,11 +69,8 @@ span.Apple-tab-span {white-space:pre}
 <p class="p2"><br></p>
 <p class="p3"><b>Using continuous synths</b> and accessing them requires using separate nodeIDs<span class="Apple-converted-space"> </span></p>
 <p class="p3">for every client - this is already supported in the Server's nodeID allocation scheme.<span class="Apple-converted-space"> </span></p>
-<p class="p3"><b>MOST URGENT ADDITION NEEDED for continuous sounds:<span class="Apple-converted-space"> </span></b></p>
-<p class="p3"><b>A method that frees one's own synths on all servers!</b></p>
-<p class="p2"><br></p>
 <p class="p3"><b>Using nodeproxies</b> on any server requires a similar untangling of bus allocation<span class="Apple-converted-space"> </span></p>
-<p class="p3">- this is <b>NOT DONE YET.</b></p>
+<p class="p3">Both of these are implemented in the <a href="SharedServer.html"><span class="s1"><b>SharedServer</b></span></a> class.<span class="Apple-converted-space"> </span></p>
 <p class="p2"><br></p>
 <p class="p3"><b>Using soundfiles</b> on other players servers would require untangling bufferIDs,<span class="Apple-converted-space"> </span></p>
 <p class="p3">and some way of ensuring the files are in a known location. <b>NOT DONE YET.</b></p>
@@ -110,27 +106,23 @@ span.Apple-tab-span {white-space:pre}
 <p class="p2"><br></p>
 <p class="p2"><br></p>
 <p class="p4"><b>TO DO - ideally with importance and ease of realisation</b></p>
-<p class="p5"><b></b><br></p>
-<p class="p3"><span class="s2"><b>1.<span class="Apple-converted-space"> </span></b></span> for continuous sounds: A method that frees all of one's own synths on all servers!</p>
-<p class="p3"><span class="Apple-tab-span">	</span>best with cmd-period.<span class="Apple-converted-space"> </span></p>
-<p class="p5"><b></b><br></p>
-<p class="p3"><b>2.</b> Do bus allocation by clientID, like nodeIDs are done already.</p>
-<p class="p2"><b></b><br></p>
-<p class="p3"><b>3. </b>When a SynthDef was added by using the SynthDef().share message, it is registered locally and sent to any newcomer. If the original author leaves the group however (by crash/sleep/out of room etc), a newcomer will not receive the synthdef, while all the others may still have it.<span class="Apple-converted-space"> </span></p>
+<p class="p5"><br></p>
+<p class="p2"><br></p>
+<p class="p3"><b>1. </b>When a SynthDef was added by using the SynthDef().share message, it is registered locally and sent to any newcomer. If the original author leaves the group however (by crash/sleep/out of room etc), a newcomer will not receive the synthdef, while all the others may still have it.<span class="Apple-converted-space"> </span></p>
 <p class="p2"><br></p>
 <p class="p3">Possible solutions:</p>
 <p class="p3">everyone keeps every synthdef that has been shared by anyone</p>
 <p class="p3">a newcomer receives all synthdefs:</p>
 <p class="p3"><span class="Apple-tab-span">	</span>* from everybody (using random delays): this may cause some overhead</p>
 <p class="p3"><span class="Apple-tab-span">	</span>* from one random person (usually this should be enough, but may fail in border cases)</p>
-<p class="p2"><b></b><br></p>
-<p class="p3"><b>4. </b>ways to inform all clients of:<span class="Apple-converted-space"> </span></p>
+<p class="p2"><br></p>
+<p class="p3"><b>2. </b>ways to inform all clients of:<span class="Apple-converted-space"> </span></p>
 <p class="p3"><span class="Apple-tab-span">	</span>buffers loaded on the central server<span class="Apple-converted-space"> </span></p>
 <p class="p3"><span class="Apple-tab-span">	</span>proxies running on the different clients (and the central server)</p>
 <p class="p2"><br></p>
-<p class="p3"><b>5. </b>ways to dynamically upload a soundfile, load it, and inform every client</p>
+<p class="p3"><b>3. </b>ways to dynamically upload a soundfile, load it, and inform every client</p>
 <p class="p2"><b><span class="Apple-tab-span">	</span></b></p>
-<p class="p3"><b>6.</b> building a server representation based on the currently running server:<span class="Apple-converted-space"> </span></p>
+<p class="p3"><b>4.</b> building a server representation based on the currently running server:<span class="Apple-converted-space"> </span></p>
 <p class="p3"><span class="Apple-tab-span">	</span>get all the proper server options ...<span class="Apple-converted-space"> </span></p>
 <p class="p3"><span class="Apple-tab-span">	</span>maybe best from sclang on the server's computer!<span class="Apple-converted-space"> </span></p>
 <p class="p2"><br></p>
