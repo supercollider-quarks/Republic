@@ -70,10 +70,11 @@ span.Apple-tab-span {white-space:pre}
 <p class="p3"><b>Using continuous synths</b> and accessing them requires using separate nodeIDs<span class="Apple-converted-space"> </span></p>
 <p class="p3">for every client - this is already supported in the Server's nodeID allocation scheme.<span class="Apple-converted-space"> </span></p>
 <p class="p3"><b>Using nodeproxies</b> on any server requires a similar untangling of bus allocation<span class="Apple-converted-space"> </span></p>
-<p class="p3">Both of these are implemented in the <a href="SharedServer.html"><span class="s1"><b>SharedServer</b></span></a> class.<span class="Apple-converted-space"> </span></p>
+<p class="p3">Both of these are implemented in the <a href="SharedServer.html"><span class="s1"><b>SharedServer</b></span></a> class, as well as non-overlapping<span class="Apple-converted-space"> </span></p>
+<p class="p3">buffer IDs.</p>
 <p class="p2"><br></p>
-<p class="p3"><b>Using soundfiles</b> on other players servers would require untangling bufferIDs,<span class="Apple-converted-space"> </span></p>
-<p class="p3">and some way of ensuring the files are in a known location. <b>NOT DONE YET.</b></p>
+<p class="p3"><b>Using soundfiles</b> on other players servers would require some way of ensuring<span class="Apple-converted-space"> </span></p>
+<p class="p3">the files are in a known location. <b>NOT DONE YET.</b></p>
 <p class="p3">This seems cumbersome; a reasonable variant would be to agree on a set of<span class="Apple-converted-space"> </span></p>
 <p class="p3">soundfiles, put it on all computers in the same location, and preload all the buffers</p>
 <p class="p3">on startup, so the buffer numbers are in sync across machines.<span class="Apple-converted-space"> </span></p>

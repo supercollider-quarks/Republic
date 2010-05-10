@@ -22,7 +22,7 @@ SharedServer : Server {
 		super.init(argName, argAddr, argOptions, argClientID); 
 		myGroup = Group.basicNew(this, 100 + clientID);
 	}
-		// only do this after init!
+		// only do this once right after init!
 	reserveOtherBusses { 
 		var offsetAudio = options.numOutputBusChannels + options.numInputBusChannels;
 		var numAudio = options.numAudioBusChannels - offsetAudio;
@@ -35,8 +35,16 @@ SharedServer : Server {
 			if (id != clientID) { 
 				audioBusAllocator.reserve(offsetAudio + (numAudioEach * id), numAudioEach);
 				controlBusAllocator.reserve((numCtlEach * id), numCtlEach);
-			} { 
-			
+			};
+		};
+	} 
+
+	reserveOtherBufnums { 
+		var numBufsEach = options.numBuffers div: numClients; 
+		
+		numClients.do { |id|
+			if (id != clientID) { 
+				bufferAllocator.reserve((numBufsEach * id), numBufsEach);
 			};
 		};
 	} 
