@@ -1,6 +1,6 @@
 
 SharedServer : Server { 
-	var <myGroup, <>numClients = 8; 
+	var <myGroup, <>numClients = 8, <bufs; 
 
 	asTarget { ^myGroup }
 	asGroup { ^myGroup }
@@ -62,6 +62,29 @@ SharedServer : Server {
 			this.initTree;
 		} { 
 			myGroup.freeAll;
+		}
+	}
+	
+	getBufs { |action| 
+		var dur = (options.numBuffers * options.blockSize / sampleRate * 5).postln;
+		var newBufs = Array(32);
+		var resp = OSCresponder(nil, 'bufscan', { |time, resp, msg| 
+			var bufnum, frames, chans, srate; 
+			#bufnum, frames, chans, srate = msg.keep(-4); 
+			if (chans > 0) { newBufs = newBufs.add(Buffer(this, frames, chans, srate, bufnum: bufnum).postln) };
+		}).add;
+
+		{	var bufnum = Line.kr(0, options.numBuffers, dur, doneAction: 2).round(1);
+			var trig = HPZ1.kr(bufnum);
+			SendReply.kr(trig, 'bufscan', 
+				[bufnum, BufFrames.kr(bufnum), BufChannels.kr(bufnum), BufSampleRate.kr(bufnum)]);
+		}.play(this);
+		
+		fork { 
+			(dur + 0.5).wait; 
+			resp.remove; 
+			bufs = newBufs;
+			(action ? { |bufs| "\t SharedServer - found these buffers: ".postln; bufs.printAll }).value(bufs);
 		}
 	}
 }

@@ -13,6 +13,7 @@ p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco}
 p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #2024c7}
 p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #cd0b0b}
 p.p6 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; min-height: 12.0px}
+p.p7 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #1e22bf}
 span.s1 {font: 18.0px Helvetica}
 span.s2 {font: 9.0px Monaco}
 span.s3 {color: #000000}
@@ -20,6 +21,8 @@ span.s4 {color: #2024c7}
 span.s5 {color: #008417}
 span.s6 {color: #737373}
 span.s7 {color: #cd0b0b}
+span.s8 {color: #007313}
+span.s9 {color: #1e22bf}
 span.Apple-tab-span {white-space:pre}
 </style>
 </head>
@@ -182,6 +185,38 @@ span.Apple-tab-span {white-space:pre}
 <p class="p3"><span class="Apple-tab-span">	</span>// non-overlapping now:</p>
 <p class="p3"><span class="s4">b = Buffer</span>.alloc(t, t.sampleRate * 4, 2);</p>
 <p class="p3"><span class="s4">c = Buffer</span>.alloc(u, t.sampleRate * 4, 2);</p>
+<p class="p6"><br></p>
+<p class="p6"><br></p>
+<p class="p6"><br></p>
+<p class="p6"><br></p>
+<p class="p3"><span class="Apple-tab-span">	</span>// you can get all the buffers from the server:</p>
+<p class="p6"><br></p>
+<p class="p3">t.getBufs({ |bufs| "\n<span class="Apple-tab-span">	</span>YO! SharedServer - found these buffers: ".postln; bufs.printAll });</p>
+<p class="p6"><br></p>
+<p class="p3">t.bufs;</p>
+<p class="p6"><br></p>
+<p class="p3">u.getBufs</p>
+<p class="p6"><br></p>
+<p class="p6"><br></p>
+<p class="p6"><br></p>
+<p class="p6"><br></p>
+<p class="p6"><br></p>
+<p class="p3">// Get all buffer infos from the SharedServer</p>
+<p class="p6"><br></p>
+<p class="p3">(</p>
+<p class="p3">b = Array.new(32);<span class="Apple-converted-space"> </span></p>
+<p class="p7"><span class="s3">o.remove; o = </span>OSCresponder<span class="s3">(</span>nil<span class="s3">, </span><span class="s8">'bufscan'</span><span class="s3">, { </span>|time, resp, msg|<span class="s3"><span class="Apple-converted-space"> </span></span></p>
+<p class="p3"><span class="Apple-tab-span">	</span>var bufnum, frames, chans, srate;<span class="Apple-converted-space"> </span></p>
+<p class="p3"><span class="Apple-tab-span">	</span>#bufnum, frames, chans, srate = msg.keep(-4).postln;<span class="Apple-converted-space"> </span></p>
+<p class="p3"><span class="Apple-tab-span">	</span>if (chans &gt; 0) { b = b.add(Buffer(t, frames, chans, srate, bufnum: bufnum)) };</p>
+<p class="p3">}).add;</p>
+<p class="p6"><br></p>
+<p class="p3">{<span class="Apple-tab-span">	</span>var bufnum = Line.kr(0, 1024, 8).round(1);</p>
+<p class="p3"><span class="Apple-tab-span">	</span>var trig = HPZ1.kr(bufnum);</p>
+<p class="p4"><span class="s3"><span class="Apple-tab-span">	</span></span><span class="s9">SendReply</span><span class="s3">.kr(trig, </span><span class="s8">'bufscan'</span><span class="s3">, [bufnum, </span>BufFrames.kr(<span class="s3">bufnum</span>), BufChannels.kr(<span class="s3">bufnum</span>), BufSampleRate.kr(<span class="s3">bufnum</span>)]<span class="s3">);</span></p>
+<p class="p3">}.play(t);</p>
+<p class="p3">)</p>
+<p class="p6"><br></p>
 <p class="p6"><br></p>
 </body>
 </html>
