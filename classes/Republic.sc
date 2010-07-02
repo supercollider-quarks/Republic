@@ -3,20 +3,17 @@ Republic : SimpleRepublic {
 	classvar <maxID = 31;
 
 	var <clientID, <serverPort = 57109;
-	var <servers, <synthDefs, <synthDescs, <>latency;
-	var <republicServer;
+	var <servers, <>latency;
+	var <republicServer, <>options;
 	var <synthDefResp, synthDefSendCmd;
-	var setAllocator;
-	var <allIDs;
+	var setAllocator, <allClientIDs;
 	
 	var <>usesRandIDs = true;
 	
 	init {
 		super.init;
 		servers = ();
-		synthDefs = ();
-		synthDescs = ();
-		allIDs = ();
+		allClientIDs = ();
 		synthDefSendCmd =  republicName.asString ++ "/synthDef";
 		
 		setAllocator = { |serv| // better take this one, we use one for all
@@ -29,7 +26,7 @@ Republic : SimpleRepublic {
 		name = name.asSymbol;
 		if (this.nameIsFree(name)) { 
 				// set clientID first so statusFunc call works
-			clientID = argClientID ?? { this.freeID };
+			clientID = argClientID ?? { this.nextFreeID };
 			serverPort = argServerPort ? serverPort;
 			
 			republicServer = RepublicServer(this, clientID); // interface to the event system
@@ -39,7 +36,8 @@ Republic : SimpleRepublic {
 			synthDefResp = OSCresponderNode(nil, synthDefSendCmd, { | t,r,msg |
 				var name = msg[1];
 				var bytes = msg[2];
-				this.storeRemoteSynthDef(name, bytes)
+				var sentBy = msg[3];
+				this.storeRemoteSynthDef(name, bytes, sentBy)
 			}).add;
 		};
 	}
@@ -79,23 +77,23 @@ Republic : SimpleRepublic {
 	
 	addSynthDef { | synthDef |
 		var name = synthDef.name.asSymbol;
-		synthDefs.put(name, synthDef);
 		this.sendSynthDef(\all, synthDef);
 	}
 	
 	removeSynthDef { | name |
-		synthDefs.removeAt(name);
+		// synthDefs.removeAt(name);
 		// maybe remove all synthDescs for everyone?
+		^this.notYetImplemented
 	}
 			
 	// private implementation
 	
-	freeID { 
+	nextFreeID { 
 		var res;
 		if (usesRandIDs) { 
-			res = (0..maxID).removeAll(allIDs.keys).choose;
+			res = (0..maxID).removeAll(allClientIDs.keys).choose;
 		} { 
-			res = (0 .. maxID).detect { |i| allIDs.includes(i).not };
+			res = (0 .. maxID).detect { |i| allClientIDs.includes(i).not };
 		}; 
 		if (res.isNil) { 
 			warn("Republic: no more free clientIDs!"); 
@@ -103,32 +101,35 @@ Republic : SimpleRepublic {
 		} { ^res }
 	}
 
-	addParticipant { | key, addr, clID |
+	addParticipant { | key, addr, otherClientID, extraData |
 		
 		addrs.put(key, addr); 
-		allIDs.put(key, clID);
+		allClientIDs.put(key, otherClientID);
 		
-		if (clientID.notNil) { 
-			this.addServer(key, addr);
+		if (clientID.notNil) { // I play with my own id on remote server
+			this.addServer(key, addr, extraData);
 		}
 	}
 			
 	removeParticipant { | key |
 		addrs.removeAt(key);
-		allIDs.removeAt(key);
+		allClientIDs.removeAt(key);
 		this.removeServer(key); 
 	}
-
-	statusFunc { 
-		if (nickname.notNil) { 
-			broadcastAddr.do(_.sendMsg(republicName, nickname, clientID)) 
+		
+	extraStatusData {
+		^options !? {
+			[options.numOutputBusChannels, options.numOutputBusChannels]
+		}
+	}
+	
+	addServer { | name, addr, port, extraData|
+		var server, options;
+		var numOutputBusChannels, numInputBusChannels;
+		extraData !? {
+			#numOutputBusChannels, numInputBusChannels = extraData
 		};
 		
-		this.assemble; 
-	}
-		
-	addServer { | name, addr, port |
-		var server, options;
 		server = Server.named.at(name);
 
 		if(server.isNil) {
@@ -142,11 +143,12 @@ Republic : SimpleRepublic {
 			server.tree = setAllocator;
 			
 			if(name == nickname) {
-				"my own.".postln;
 				options = Server.default.options.copy;
 				options.numAudioBusChannels = 128 * 32;
 				options.numControlBusChannels = 4096 * 32;
 				options.memSize = 8192 * 32;
+				numOutputBusChannels !? { options.numOutputBusChannels = numOutputBusChannels };
+				numInputBusChannels !? { options.numInputBusChannels = numInputBusChannels };
 				server.options = options;
 				server.boot;
 				defer { try{ server.makeGui } };
@@ -168,37 +170,62 @@ Republic : SimpleRepublic {
 		
 		if(verbose) { "Republic(%): added server %\n".postf(nickname, name); };
 		// send all synthdefs to the new server
-		synthDefs.do { |synthDef| 
-			this.sendSynthDef(name, synthDef) 
-		};
+		this.shareSynthDefs(name);
 		setAllocator.value(server);
 		
 	}
 	
-	removeServer { | name |
-		servers.removeAt(name).remove;
+	removeServer { | who |
+		servers.removeAt(who).remove;
 	}
 	
+	shareSynthDefs { | who |
+		
+		fork {
+			rrand(1.0, 2.0).wait; // wait for the other server to boot
+			SynthDescLib.global.synthDescs.do { |synthDesc|
+					var sentBy, bytes, doSend;
+					synthDesc.metadata !? { 
+						sentBy = synthDesc.metadata.at(\sentBy);
+						bytes = synthDesc.metadata.bytes;
+					};
+					
+					doSend = sentBy.notNil and: { bytes.notNil }
+							and: {
+								nickname == sentBy	// was me
+								or: { addrs.at(sentBy).isNil } // has left
+							};
+					if(doSend) {
+						this.sendSynthDefBytes(who, synthDesc.name, synthDesc.metadata.bytes);
+						0.1.rand.wait; // distribute load
+					}
+			}
+		}
+	}
 	
 	sendSynthDef { | who, synthDef |
-		var bytes = synthDef.asBytes;
-		this.send(who, synthDefSendCmd, synthDef.name, bytes);
-		this.sendServer(who, "/d_recv", bytes);
+		this.sendSynthDefBytes(who, synthDef.name, synthDef.asBytes);
 		if(verbose) { "Republic (%): sent synthdef % to %\n".postf(nickname, synthDef.name, who) };
 	}
+	
+	sendSynthDefBytes { | who, defName, bytes |
+		this.send(who, synthDefSendCmd, defName, bytes, nickname);
+		this.sendServer(who, "/d_recv", bytes);
+	}
 
-	storeRemoteSynthDef { | name, bytes |
+
+	storeRemoteSynthDef { | name, bytes, sentBy |
+
 		var lib = SynthDescLib.global;
 		var stream = CollStream(bytes);
 		var dict = SynthDesc.readFile(stream, false, lib.synthDescs);
 		var args = [\instrument, name];
+		var synthDesc = lib.at(name);
 		
 		try { this.manipulateSynthDesc(name) };
-		synthDescs.put(name, lib.at(name));
 		
-		lib.servers.do({ |server|
-			server.value.sendBundle(nil, ["/d_recv", bytes])
-		});
+		// add the origin and SynthDef data to the metadata field
+		synthDesc.metadata = (sentBy: sentBy, bytes: bytes);
 		
 		// post a prototype event:	
 		dict.at(name).controls.do { |ctl| 
@@ -212,32 +239,28 @@ Republic : SimpleRepublic {
 	manipulateSynthDesc { | name |
 		var synthDesc = SynthDescLib.at(name);
 		var ctl = synthDesc.controlNames;
+		// this is done to guarantee that the "where" parameter is collected from the event
 		synthDesc !? {
 			if(ctl.isNil or: { synthDesc.controlNames.includes("where").not }) {
-				//"adding where..".postln;
 				synthDesc.controlNames = synthDesc.controlNames.add("where");
 				synthDesc.controls = synthDesc.controls.add(
 					ControlName().name_("where").defaultValue_(nickname);				);
-				// synthDesc.controlNames.postcs;
-				synthDesc.makeMsgFunc; // again
+				synthDesc.makeMsgFunc; // make msgFunc again
 			};
 		}
 	}
 	
-	// sure?
 	s { ^republicServer ? Server.default }
 	
-	homeServer {
+	myServer {
 		^servers.at(nickname)
 	}
 	
-	*dumpOSC { |flag = true|
-		thisProcess.recvOSCfunc = if(flag) { { |time, replyAddr, msg| 
-			if(#['status.reply', '/status.reply'].includes(msg[0]).not) {
-				"At time %s received message % from %\n".postf( time, msg, replyAddr )
-			}  // post all incoming traffic except the server status messages
-			} } { nil }
+	homeServer {
+		this.deprecated(thisMethod);
+		^this.myServer
 	}
+
 
 
 }
@@ -340,19 +363,24 @@ RepublicServer {
 	share { | republic |
 		republic = republic ? Republic.default;
 		if(republic.isNil) {
-			this.memStore 
+			if(Main.versionAtMost(3, 3)) { this.memStore } { this.add }
 		} {
-			republic.addSynthDef(this);
+			republic.addSynthDef(this)
 		}
 	}
 	
+	*unshare { |name|
+		^this.notYetImplemented;
+	}
+	
+	/*	
 	*unshare { |name|
 		var republic = republic ? Republic.default;
 		if(republic.notNil) { 
 			republic.removeSynthDef(this)
 		}
 		
-	}
+	}*/
 
 }
 
