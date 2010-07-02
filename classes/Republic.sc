@@ -109,7 +109,7 @@ Republic : SimpleRepublic {
 		extraData.postln;
 		
 		if (clientID.notNil) { // I play with my own id on remote server
-			this.addServer(key, addr, serverPort);
+			this.addServer(key, addr, serverPort, extraData);
 		}
 	}
 			
@@ -126,7 +126,8 @@ Republic : SimpleRepublic {
 	}
 	
 	addServer { | name, addr, port, extraData|
-		var server, options;
+		var server, serverOptions;
+		
 		var numOutputBusChannels, numInputBusChannels, numReservedControlBuses;
 		extraData !? {
 			#numOutputBusChannels, numInputBusChannels, numReservedControlBuses = extraData
@@ -144,24 +145,29 @@ Republic : SimpleRepublic {
 			server.tree = setAllocator;
 			
 			if(name == nickname) {
-				options = Server.default.options.copy;
-				options.numAudioBusChannels = 128 * 32;
-				options.numControlBusChannels = 4096 * 32;
-				options.memSize = 8192 * 32;
-				numOutputBusChannels !? { options.numOutputBusChannels = numOutputBusChannels };
-				numInputBusChannels !? { options.numInputBusChannels = numInputBusChannels };
-				server.options = options;
-				server.boot;
-				numReservedControlBuses !? { 
-						server.waitForBoot { 
-							Bus.control(server, numReservedControlBuses);
-						}
-				};
+				serverOptions = Server.default.options.copy;
+				serverOptions.numAudioBusChannels = 128 * 32;
+				serverOptions.numControlBusChannels = 4096 * 32;
+				serverOptions.memSize = 8192 * 32;
 				defer { try{ server.makeGui } };
 			} {
+				serverOptions = Server.default.options.copy;
 				"	server % not my own, assume running.\n".postf(name);
 				server.serverRunning_(true);
+				
 			};
+			
+			// configure server according to extra information and alloc buses
+			numOutputBusChannels !? { serverOptions.numOutputBusChannels = numOutputBusChannels };
+			numInputBusChannels !? { serverOptions.numInputBusChannels = numInputBusChannels };
+			server.options = serverOptions;
+			server.boot;
+			numReservedControlBuses !? { 
+					server.waitForBoot { 
+						Bus.control(server, numReservedControlBuses);
+					}
+			};
+
 				
 			// not sure if compatible
 			server.latency = latency;
