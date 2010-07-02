@@ -162,10 +162,11 @@ Republic : SimpleRepublic {
 			numInputBusChannels !? { serverOptions.numInputBusChannels = numInputBusChannels };
 			server.options = serverOptions;
 			server.boot;
-			numReservedControlBuses !? { 
-					server.waitForBoot { 
+			server.waitForBoot {
+					server.newAllocators; // this is necessary for some reason
+					numReservedControlBuses !? { 
 						Bus.control(server, numReservedControlBuses);
-					}
+					};
 			};
 
 				
