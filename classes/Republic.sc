@@ -106,8 +106,10 @@ Republic : SimpleRepublic {
 		addrs.put(key, addr); 
 		allClientIDs.put(key, otherClientID);
 		
+		extraData.postln;
+		
 		if (clientID.notNil) { // I play with my own id on remote server
-			this.addServer(key, addr, extraData);
+			this.addServer(key, addr, serverPort);
 		}
 	}
 			
@@ -125,11 +127,10 @@ Republic : SimpleRepublic {
 	
 	addServer { | name, addr, port, extraData|
 		var server, options;
-		var numOutputBusChannels, numInputBusChannels;
+		var numOutputBusChannels, numInputBusChannels, numReservedControlBuses;
 		extraData !? {
-			#numOutputBusChannels, numInputBusChannels = extraData
+			#numOutputBusChannels, numInputBusChannels, numReservedControlBuses = extraData
 		};
-		
 		server = Server.named.at(name);
 
 		if(server.isNil) {
@@ -151,6 +152,11 @@ Republic : SimpleRepublic {
 				numInputBusChannels !? { options.numInputBusChannels = numInputBusChannels };
 				server.options = options;
 				server.boot;
+				numReservedControlBuses !? { 
+						server.waitForBoot { 
+							Bus.control(server, numReservedControlBuses);
+						}
+				};
 				defer { try{ server.makeGui } };
 			} {
 				"	server % not my own, assume running.\n".postf(name);
