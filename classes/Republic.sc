@@ -34,10 +34,13 @@ Republic : SimpleRepublic {
 			super.join(name);
 			
 			synthDefResp = OSCresponderNode(nil, synthDefSendCmd, { | t, r, msg |
-				var name = msg[1];
-				var sentBy = msg[2];
-				var bytes = msg[3];
-				this.storeRemoteSynthDef(name, bytes, sentBy)
+				
+				var sentBy = msg[1];
+				var name = msg[2];
+				var sourceCode = msg[3];
+				var bytes = msg[4];
+				
+				this.storeRemoteSynthDef(sentBy, name, sourceCode, bytes)
 			}).add;
 		};
 	}
@@ -218,12 +221,13 @@ Republic : SimpleRepublic {
 	}
 	
 	sendSynthDef { | who, synthDef |
-		this.sendSynthDefBytes(who, synthDef.name, synthDef.asBytes);
+		this.sendSynthDefBytes(who, synthDef.name, 
+				synthDef.asBytes, synthDef.asCompileString);
 		if(verbose) { "Republic (%): sent synthdef % to %\n".postf(nickname, synthDef.name, who) };
 	}
 	
-	sendSynthDefBytes { | who, defName, bytes |
-		this.send(who, synthDefSendCmd, defName, nickname, bytes);
+	sendSynthDefBytes { | who, defName, bytes, sourceCode |
+		this.send(who, synthDefSendCmd, nickname, defName, sourceCode, bytes);
 		this.sendServer(who, "/d_recv", bytes);
 	}
 
@@ -233,7 +237,7 @@ Republic : SimpleRepublic {
 		}
 	}
 	
-	storeRemoteSynthDef { | name, bytes, sentBy |
+	storeRemoteSynthDef { | sentBy, name, sourceCode, bytes |
 
 		var lib = SynthDescLib.global;
 		var stream = CollStream(bytes);
@@ -244,7 +248,7 @@ Republic : SimpleRepublic {
 		try { this.manipulateSynthDesc(name) };
 		
 		// add the origin and SynthDef data to the metadata field
-		synthDesc.metadata = (sentBy: sentBy, bytes: bytes);
+		synthDesc.metadata = (sentBy: sentBy, bytes: bytes, sourceCode: sourceCode);
 		
 		// post a prototype event:	
 		dict.at(name).controls.do { |ctl| 
