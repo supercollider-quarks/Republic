@@ -1,10 +1,9 @@
 
 SimpleRepublic {
-	classvar <>fixedLangPort = true; // this should be a classvar otherwise it can't be set before calling new...
-
+	
 	var <broadcastAddr, <republicName;
 	var <addrs, <nickname, <nameList, <joined = false;
-	var<>graceCount = 16;
+	var <graceCount = 16;
 	var <>verbose = false, <>private = false; // use this later to delegate traffic
 	var <skip, <resp, <broadcastWasOn, <presence;
 	
@@ -14,66 +13,34 @@ SimpleRepublic {
 		^super.newCopyArgs(broadcastAddr, republicName).init
 	}
 	
-	*getBroadcastIPs { 
-		^Platform.case(
-			\osx, {
-				unixCmdGetStdOut("ifconfig | grep broadcast | awk '{print $NF}'")
-				.split($\n).reject(_.isEmpty) },
-			\windows, { // untested?
-				unixCmdGetStdOut("ifconfig | grep broadcast | awk '{print $NF}'")
-				.split($\n).reject(_.isEmpty) },
-			\linux, { // works at least on ubuntu and xandros...
-				unixCmdGetStdOut("/sbin/ifconfig | grep Bcast | awk 'BEGIN {FS = \"[ :]+\"}{print $6}'")
-				.split($\n).reject(_.isEmpty) }
-		);
-	}
-	
 	makeDefault { default = this }
 	
 	init {
+		broadcastAddr = broadcastAddr ?? {
+			NetAddrMP("255.255.255.255", 57120 + (0..7))
+		};
+		broadcastAddr.checkServesLangPort;
+		this.switchBroadcast(true);
+		
 		addrs = ();
 		nameList = List.new;
 		presence = ();
 
-		this.checkLangPort; 
 		this.makeResponder; 
 		this.makeSkip; 
 	}
 	
-	nameIsFree { |name| 
-		var nameIsUsed = addrs.keys.includes(name); 
-		
-		if (nameIsUsed) { 
-			if (name == nickname) { 
-				inform("Republic  %: You have already joined as %.\n"
-					.format(republicName, nickname));
-			} { 
-				inform("Republic %: nickname % is already in use!\n".format(name));
-			}
-		};
-		^nameIsUsed.not
-	}
 	
 	join { |name|
 		name = name.asSymbol;
-		if (this.nameIsFree(name)) { 		
+		if (this.nameIsFree(name)) {		
 			nickname = name;
-	
 			this.statusFunc;
 			skip.play;
-					
 			fork { 0.5.wait; this.checkJoined }
-		};
-	}
-	
-	checkJoined { 
-		joined = addrs.keys.includes(nickname); 
-		if (joined.not) { 
-			warn("Nickname % has not joined Republic yet.\n"
-			"BroadcastAddr may be wrong!"
-				.format(nickname));
 		}
 	}
+	
 	
 	leave { |free = false| 
 		nickname = nil;
@@ -88,6 +55,7 @@ SimpleRepublic {
 		addrs.do(_.disconnect);
 		addrs = ();
 		this.switchBroadcast(false);
+		OSCresponder(nil, '/hist').remove;
 	}
 	
 	send { |name ... args|
@@ -95,9 +63,30 @@ SimpleRepublic {
 	}
 	
 	
-	// need to decide what to send to server or client.
-	// probably better a class that does this.
-	// 
+	// testing
+	
+	nameIsFree { |name| 
+		var nameIsUsed = addrs.keys.includes(name); 
+		if (nameIsUsed) { 
+			if (name == nickname) { 
+				inform("Republic  %: You have already joined as %.\n"
+					.format(republicName, nickname));
+			} { 
+				inform("Republic %: nickname % is already in use!\n".format(name));
+			}
+		};
+		^nameIsUsed.not
+	}
+	
+	checkJoined { 
+		joined = addrs.keys.includes(nickname); 
+		if (joined.not) { 
+			warn("Nickname % has not joined Republic yet.\n"
+			"BroadcastAddr may be wrong!"
+				.format(nickname));
+		}
+	}
+	
 	
 	// compatibility with Collective
 	
@@ -111,12 +100,7 @@ SimpleRepublic {
 	
 	channel { ^("/" ++ republicName).asSymbol }
 	
-	/*sendToAll { arg ... args;
-		broadcastAddr.listSendMsg(args)
-	}*/
-	// send my name with every message?
-	// check rest of send interface: sendToIndex etc.
-	
+	clientID { ^0 }
 	
 	// private implementation
 
@@ -155,48 +139,82 @@ SimpleRepublic {
 			NetAddr.broadcastFlag = true;
 		} {
 			NetAddr.broadcastFlag = broadcastWasOn;
-		}
+		};
+		"\n\nRepublic: switched global NetAddr broadcast flag to %.\n".format(flag).postln;
 	}
 	
 	makeResponder {
 		resp = OSCresponderNode(nil, republicName, 
 			{ |t,r,	msg, replyAddr|
-				var otherNick, otherID, addr;
+				var otherNick, otherID, addr, extraData;
+				var tempo, beats, serverConfig;
 				
-				otherNick = msg[1]; 
-				otherID = msg[2]; 
+				otherNick = msg[1];
+				otherID = msg[2];
+				extraData = msg[3..];
+												
 								
 				if(addrs.at(otherNick).isNil) {
 					addr = NetAddr(replyAddr.addr.asIPString, replyAddr.port);
-										// pass on clientID in Republic
-					this.addParticipant(otherNick, addr, otherID);
+					this.addParticipant(otherNick, addr, otherID, extraData);
 					(" ---> % has joined the Republic. ---".format(otherNick)).postln;
 				};
 				presence.put(otherNick, graceCount);
 		}).add;
 	}
-	
-	statusFunc { 
-		"SimpleRepublic:statusFunc runs.".postln;
-		if (nickname.notNil) { broadcastAddr.do(_.sendMsg(republicName, nickname)) };
+		
+	statusFunc {
+		var msg;
+		if (nickname.notNil) {
+			msg = [republicName] ++ this.statusData;
+			broadcastAddr.do(_.sendBundle(nil, msg)) 
+		};
 		this.assemble; 
 	}
 	
+	statusData {
+		// subclass compatibility
+		// the two 0's are for backwards compatibility (used to be beats and phase) 
+		^[nickname, this.clientID, 0, 0] 
+	}
+	
 	makeSkip {
-
 		this.statusFunc; // do once immediately
 		skip.stop;
 		skip = SkipJack({ this.statusFunc }, 1.0, name: republicName);
 	}
+
 	
-	checkLangPort {
-		if(fixedLangPort and: { NetAddr.langPort != 57120 }) { 
-			Error(
-				"Can't join Republic: please try and restart SuperCollider"
-				" to get langPort 57120."
-			).throw
-		};
+	// GUI
+	
+	gui { |parent, bounds|
+		^EZRepublicGui(parent, bounds, this);
 	}
+	
+	shareHistory {
+		
+		OSCresponder(nil, '/hist', {|t,r,msg| 
+			History.enter(msg[2].asString, msg[1]) 
+		}).add; 
+		
+		History.forwardFunc = { |code|
+			if(joined) { this.send(\all, '/hist', nickname, code) }
+		};	
+	
+		History.start;
+		History.makeWin;
+		History.localOff;
+			
+	}
+	
+	*dumpOSC { |flag = true|
+		thisProcess.recvOSCfunc = if(flag) { { |time, replyAddr, msg| 
+			if(#['status.reply', '/status.reply'].includes(msg[0]).not) {
+				"At time %s received message % from %\n".postf( time, msg, replyAddr )
+			}  // post all incoming traffic except the server status messages
+			} } { nil }
+	}
+	
 	
 	// if name == \all, send to each item in the dict.
 	// otherwise send to each of the given names
@@ -218,5 +236,21 @@ SimpleRepublic {
 			}
 		}
 	}
+	
+	// deprecated
+	
+	*fixedLangPort {
+		^this.deprecated(thisMethod)
+	}
+	
+	*fixedLangPort_ {
+		^this.deprecated(thisMethod)
+	}
+	
+	*getBroadcastIPs {
+		"Please use instead: NetAddr.getBroadcastIPs".postln;
+		^this.deprecated(thisMethod, NetAddr.findRespondingMethodFor(\getBroadcastIPs))
+	}
+	
 }
 

@@ -1,7 +1,12 @@
 // implements a NetAddr that can have multiple ports...
-NetAddrMP : NetAddr{
+NetAddrMP : NetAddr {
 
 	var <>ports;
+	
+	*new { arg hostname, ports;
+		ports = ports.asArray;
+		^super.new(hostname, ports.first).ports_(ports)
+	}
 	
 	sendRaw{ arg rawArray;
 		ports.do{ |it|

@@ -1,14 +1,16 @@
 
+
 Republic : SimpleRepublic {
 	classvar <maxID = 31;
 
-	var <clientID, <serverPort = 57109;
+	var <serverPort = 57109;
 	var <servers, <>latency;
-	var <republicServer, <>options;
+	var <republicServer, <clientID, <>options;
 	var <synthDefResp, synthDefSendCmd;
 	var setAllocator, <allClientIDs;
+	var <>onJoinAction;
 	
-	var <>usesRandIDs = true;
+	var <>usesRandIDs = true, <>usesSeparateState = true;
 	
 	init {
 		super.init;
@@ -19,19 +21,17 @@ Republic : SimpleRepublic {
 		setAllocator = { |serv| // better take this one, we use one for all
 			serv.nodeAllocator = republicServer.nodeAllocator;
 		};
-		
+		options = this.defaultServerOptions;
 	}
 	
 	join { | name, argClientID, argServerPort |
 		name = name.asSymbol;
-		if (this.nameIsFree(name)) { 
-				// set clientID first so statusFunc call works
+		if (this.nameIsFree(name)) {
 			clientID = argClientID ?? { this.nextFreeID };
 			serverPort = argServerPort ? serverPort;
 			
 			republicServer = RepublicServer(this, clientID); // interface to the event system
 			super.join(name);
-
 			
 			synthDefResp = OSCresponderNode(nil, synthDefSendCmd, { | t,r,msg |
 				var name = msg[1];
@@ -41,7 +41,7 @@ Republic : SimpleRepublic {
 			}).add;
 		};
 	}
-
+	
 	assemble {
 		super.assemble; 
 				// make servers if clientID was added, 
@@ -61,7 +61,6 @@ Republic : SimpleRepublic {
 			// quit all my nodes on the server if possible? 
 		servers.do { }; 
 		servers = ();
-		clientID = nil; 
 		super.leave(free);	// keep lurking by default
 	}
 			
@@ -101,15 +100,13 @@ Republic : SimpleRepublic {
 		} { ^res }
 	}
 
-	addParticipant { | key, addr, otherClientID, extraData |
+	addParticipant { | key, addr, otherClientID, config |
 		
 		addrs.put(key, addr); 
 		allClientIDs.put(key, otherClientID);
 		
-		extraData.postln;
-		
 		if (clientID.notNil) { // I play with my own id on remote server
-			this.addServer(key, addr, serverPort, extraData);
+			this.addServer(key, addr, serverPort, config);
 		}
 	}
 			
@@ -119,59 +116,14 @@ Republic : SimpleRepublic {
 		this.removeServer(key); 
 	}
 		
-	extraStatusData {
-		^options !? {
-			[options.numOutputBusChannels, options.numOutputBusChannels]
-		}
-	}
-	
-	addServer { | name, addr, port, extraData|
-		var server, serverOptions;
+	addServer { | name, addr, port, config |
 		
-		var numOutputBusChannels, numInputBusChannels, numReservedControlBuses;
-		extraData !? {
-			#numOutputBusChannels, numInputBusChannels, numReservedControlBuses = extraData
-		};
+		var server;
 		server = Server.named.at(name);
 
 		if(server.isNil) {
 			"\n Republic: new server added: %\n".postf(name);
-			addr = addr.addr.asIPString;
-			if(name == nickname) { addr = "127.0.0.1" }; // replace by loopback
-			port = port ?? { serverPort };
-			// make a new server representation
-			server = Server.new(name, NetAddr(addr, port), clientID: clientID);
-			
-			server.tree = setAllocator;
-			
-			if(name == nickname) {
-				serverOptions = Server.default.options.copy;
-				serverOptions.numAudioBusChannels = 128 * 32;
-				serverOptions.numControlBusChannels = 4096 * 32;
-				serverOptions.memSize = 8192 * 32;
-				defer { try{ server.makeGui } };
-			} {
-				serverOptions = Server.default.options.copy;
-				"	server % not my own, assume running.\n".postf(name);
-				server.serverRunning_(true);
-				
-			};
-			
-			// configure server according to extra information and alloc buses
-			numOutputBusChannels !? { serverOptions.numOutputBusChannels = numOutputBusChannels };
-			numInputBusChannels !? { serverOptions.numInputBusChannels = numInputBusChannels };
-			server.options = serverOptions;
-			server.boot;
-			server.waitForBoot {
-					server.newAllocators; // this is necessary for some reason
-					numReservedControlBuses !? { 
-						Bus.control(server, numReservedControlBuses);
-					};
-			};
-
-				
-			// not sure if compatible
-			server.latency = latency;
+			server = this.makeNewServer(name, addr, port, config);
 		} {
 			"	server % already there - fine.\n".postf(name);
 			server.tree = setAllocator;
@@ -179,7 +131,7 @@ Republic : SimpleRepublic {
 		};
 			
 		servers.put(name, server);
-		server.sendBundle(nil, ['/error', -1],['/notify', 1],['/error', -2]);
+		server.assureNotified;
 		
 		if(verbose) { "Republic(%): added server %\n".postf(nickname, name); };
 		// send all synthdefs to the new server
@@ -191,6 +143,55 @@ Republic : SimpleRepublic {
 	removeServer { | who |
 		servers.removeAt(who).remove;
 	}
+	
+	
+	makeNewServer { | name, addr, port, config |
+			
+			var newServer, serverOptions;
+					
+			addr = addr.addr.asIPString;
+			if(name == nickname) { addr = "127.0.0.1" }; // replace by loopback
+			port = port ?? { serverPort };
+			
+			// make a new server representation
+			newServer = SharedServer.new(name, NetAddr(addr, port), clientID: clientID);
+			newServer.tree = setAllocator;
+			
+			if(name == nickname) {
+				newServer.options = options;
+				defer { try { newServer.makeGui } };
+				newServer.waitForBoot { onJoinAction.value(this, newServer) };
+				
+			} {
+				newServer.options = this.defaultServerOptions(config);
+				"	server % not my own, assume running.\n".postf(name);
+				newServer.serverRunning_(true);
+			};
+			
+			newServer.latency = latency; // not sure if compatible
+			^newServer
+	}
+	
+	defaultServerOptions { |config|
+		var op = SharedServerOptions.fromConfig(config);
+		var maxNumClients = (maxID + 1);
+		if(usesSeparateState) {
+			op.numAudioBusChannels = 128 * maxNumClients;
+			op.numControlBusChannels = 4096 * maxNumClients;
+			op.memSize = 8192 * maxNumClients;
+			op.numClients = maxID;
+		};
+		^op
+	}
+		
+	statusData {
+		var res = super.statusData;
+		options !? { res = res ++ options.asConfig }; // send hardware info etc.
+		^res
+	}
+	
+	// sharing synth desf
+	
 	
 	shareSynthDefs { | who |
 		
@@ -246,7 +247,6 @@ Republic : SimpleRepublic {
 		};
 		"// SynthDef \"%\" added:\n".postf(name);
 		().putPairs(args).postcs;
-		
 	}
 	
 	manipulateSynthDesc { | name |
@@ -267,6 +267,10 @@ Republic : SimpleRepublic {
 	
 	myServer {
 		^servers.at(nickname)
+	}
+	
+	asTarget {
+		^this.myServer.asTarget
 	}
 	
 	homeServer {
@@ -290,19 +294,9 @@ RepublicServer {
 	}
 	
 	init {
-		var options = Server.default.options;
-		/*if(options.numAudioBusChannels <= 1024) {
-			("in networks, it makes sense to set the allocators maximum much higher."
-			"\ne.g. current value of numAudioBusChannels: % suggested: 2048"
-			).format(options.numAudioBusChannels);
-			options.numAudioBusChannels = 4096;
-			options.numControlBusChannels = 8192;
-			options.numBuffers = 2048 + 2;
-		};*/
-		this.newAllocators(republic.clientID, options);
+		this.newAllocators;
 	}
 
-	
 	sendBundle { |time ... msgs|
 		republic.sendServerBundle(time, this.findWhere(msgs[0]), *msgs);
 	}
@@ -322,6 +316,10 @@ RepublicServer {
 		// ^-1
 	}
 	
+	asTarget {
+		^republic.asTarget	
+	}
+	
 	latency {
 		^republic.latency
 	}
@@ -329,47 +327,16 @@ RepublicServer {
 	name {
 		^republic.nickname
 	}
-
-	newAllocators { |clientID, options|
-		nodeAllocator = NodeIDAllocator(clientID, options.initialNodeID);
-		/*controlBusAllocator = PowerOfTwoAllocator.newRange(
-			clientID, options.numControlBusChannels);
-		audioBusAllocator = PowerOfTwoAllocator.newRange(
-				clientID, options.numAudioBusChannels, options.firstPrivateBus);
-		bufferAllocator = PowerOfTwoAllocator.newRange(clientID, options.numBuffers);*/
+	
+	// this needs some work
+	newAllocators {
+		nodeAllocator = NodeIDAllocator(clientID, republic.options.initialNodeID);
 	}
 
 	
 }
 
 
-
-
-+ Server {
-
-	remove {
-		Server.all.remove(this);
-		Server.named.removeAt(name);
-		SynthDescLib.global.removeServer(this);
-		try { this.window.close };
-	}
-	
-	nodeAllocator_ { |allocator|
-		nodeAllocator = allocator
-	}
-	
-	controlBusAllocator_ { |allocator|
-		controlBusAllocator = allocator
-	}
-	
-	audioBusAllocator_ { |allocator|
-		audioBusAllocator = allocator
-	}
-	
-	bufferAllocator_ { |allocator|
-		bufferAllocator = allocator
-	}
-}
 
 + SynthDef {
 
@@ -397,24 +364,4 @@ RepublicServer {
 
 }
 
-/*+ PowerOfTwoAllocator {
-
-	// to be tested.
-	
-	*newRange { |user = 0, size, pos = 0|
-		
-		var blockStart, blockSize, block;
-		
-	//	[\user, user, \size, size, \pos, pos].postln;
-		
-		if(user > 31) { "maximal 32 users, maximum clientID is 31".error };
-	
-		blockSize = (size - pos) div: 32;
-		blockStart = pos + (user * blockSize);
-	//	[\blockSize, blockSize, \blockStart, blockStart].postln;
-		^this.new(blockSize, blockStart + blockSize)
-	}
-	
-}
-*/
 

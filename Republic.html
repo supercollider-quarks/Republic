@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Style-Type" content="text/css">
 <title></title>
 <meta name="Generator" content="Cocoa HTML Writer">
-<meta name="CocoaVersion" content="1038.25">
+<meta name="CocoaVersion" content="1038.29">
 <style type="text/css">
 p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
 p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
@@ -19,10 +19,11 @@ p.p9 {margin: 0.0px 0.0px 0.0px 57.0px; text-indent: -57.0px; font: 9.0px Monaco
 p.p10 {margin: 0.0px 0.0px 0.0px 57.0px; text-indent: -57.0px; font: 9.0px Monaco; min-height: 12.0px}
 p.p11 {margin: 0.0px 0.0px 0.0px 57.0px; text-indent: -57.0px; font: 14.0px Helvetica}
 p.p12 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #bf0000; min-height: 12.0px}
-p.p13 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #cd0b0b}
-p.p14 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco}
-p.p15 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #008417}
-p.p16 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #2024c7}
+p.p13 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #cd1612}
+p.p14 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #cd0b0b}
+p.p15 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco}
+p.p16 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #008417}
+p.p17 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #2024c7}
 span.s1 {font: 18.0px Helvetica}
 span.s2 {color: #000000}
 span.s3 {text-decoration: underline}
@@ -33,9 +34,9 @@ span.s7 {font: 12.0px Helvetica}
 span.s8 {color: #007300}
 span.s9 {color: #606060}
 span.s10 {color: #2024c7}
-span.s11 {color: #737373}
+span.s11 {color: #008417}
 span.s12 {color: #cd0b0b}
-span.s13 {color: #008417}
+span.s13 {color: #737373}
 span.Apple-tab-span {white-space:pre}
 </style>
 </head>
@@ -103,131 +104,125 @@ span.Apple-tab-span {white-space:pre}
 <p class="p6"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></p>
 <p class="p2"><br></p>
 <p class="p11"><b>Examples</b></p>
-<p class="p10"><br></p>
 <p class="p12"><br></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span></span><span class="s10">NetAddr</span><span class="s2">.broadcastFlag; <span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// is broadcasting on?<span class="Apple-converted-space"> </span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span></span><span class="s10">NetAddr</span><span class="s2">.broadcastFlag = </span><span class="s10">true</span><span class="s2">;<span class="Apple-tab-span">	</span></span>// if not, turn on broadcast in SC3.</p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span></span>// first get the broadcast addr of your local network:<span class="Apple-converted-space"> </span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span></span><span class="s10">Republic</span><span class="s2">.getBroadcastIPs.postcs; </span>// usually the first one is fine.</p>
 <p class="p4"><span class="Apple-tab-span">	</span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span></span>// make a new instance</p>
-<p class="p14"><span class="Apple-tab-span">	</span>r = <span class="s10">Republic</span>(<span class="s10">NetAddr</span>(<span class="s11">"192.168.178.255"</span>, 57120)).makeDefault; <span class="s12">// put the broadcast ip here.</span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span></span><span class="s10">EZRepublicGui</span><span class="s2">(republic: r);<span class="Apple-tab-span">	</span></span>// make a gui to monitor its state</p>
-<p class="p14"><span class="Apple-tab-span">	</span>r.join(<span class="s13">\alice</span>);</p>
+<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span>r = </span><span class="s10">Republic</span><span class="s2">().makeDefault; </span>// make a new instance</p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span></span><span class="s10">EZRepublicGui</span><span class="s2">(republic: r);<span class="Apple-tab-span">	</span></span>// make a gui to monitor its state</p>
+<p class="p15"><span class="Apple-tab-span">	</span>r.join(<span class="s11">\alice</span>);</p>
 <p class="p4"><span class="Apple-tab-span">	</span></p>
-<p class="p13"><span class="s2">(<span class="Apple-tab-span">	</span></span>// individual status messages can come in before republic is joined: </p>
-<p class="p14"><span class="Apple-tab-span">	</span>r.broadcastAddr.sendMsg(<span class="s13">'/republic'</span>, <span class="s13">\dada</span>, 0);</p>
-<p class="p14"><span class="Apple-tab-span">	</span>r.broadcastAddr.sendMsg(<span class="s13">'/republic'</span>, <span class="s13">\otto</span>, 1);</p>
-<p class="p14"><span class="Apple-tab-span">	</span>r.broadcastAddr.sendMsg(<span class="s13">'/republic'</span>, <span class="s13">\julio</span>, 2);</p>
-<p class="p14">)<span class="Apple-tab-span">	</span></p>
+<p class="p14"><span class="s2">(<span class="Apple-tab-span">	</span></span>// individual status messages can come in before republic is joined: </p>
+<p class="p15"><span class="Apple-tab-span">	</span>r.broadcastAddr.sendMsg(<span class="s11">'/republic'</span>, <span class="s11">\dada</span>, 0);</p>
+<p class="p15"><span class="Apple-tab-span">	</span>r.broadcastAddr.sendMsg(<span class="s11">'/republic'</span>, <span class="s11">\otto</span>, 1);</p>
+<p class="p15"><span class="Apple-tab-span">	</span>r.broadcastAddr.sendMsg(<span class="s11">'/republic'</span>, <span class="s11">\julio</span>, 2);</p>
+<p class="p15">)<span class="Apple-tab-span">	</span></p>
 <p class="p4"><br></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span>r.addrs;<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// a dictionary of all net addresses.<span class="Apple-converted-space"> </span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// May take a second before all addrs have come in.</p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span>r.allIDs;<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// IDs currently in use</p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span>r.freeID;<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// get a free ID (by default, random between 0 and 31 minus those in use)</p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span>r.usesRandIDs = </span><span class="s10">false</span><span class="s2">;<span class="Apple-tab-span">	</span></span>// switch to get the lowest free ID</p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span>r.freeID;<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// get the next free ID</p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span>r.addrs;<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// a dictionary of all net addresses.<span class="Apple-converted-space"> </span></p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// May take a second before all addrs have come in.</p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span>r.allIDs;<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// IDs currently in use</p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span>r.freeID;<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// get a free ID (by default, random between 0 and 31 minus those in use)</p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span>r.usesRandIDs = </span><span class="s10">false</span><span class="s2">;<span class="Apple-tab-span">	</span></span>// switch to get the lowest free ID</p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span>r.nextFreeID;<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// get the next free ID</p>
 <p class="p4"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// nickname and clientID - Each person in the group should have a unique ID from 0 to 31.</p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// one can either agree on unique IDs beforehand (e.g. with a deck of numbered cards),<span class="Apple-converted-space"> </span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// or rely on the default, lowestFreeID, which usually works unless many people join</p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// at the same time.<span class="Apple-converted-space"> </span></p>
-<p class="p14"><span class="Apple-tab-span">	</span>r.nameIsFree(<span class="s13">\dada</span>);</p>
-<p class="p14"><span class="Apple-tab-span">	</span>r.nameIsFree(<span class="s13">\alice</span>);</p>
-<p class="p14"><span class="Apple-tab-span">	</span>r.join(<span class="s13">\alice</span>);</p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span>r.join(</span><span class="s13">\alice</span><span class="s2">);<span class="Apple-tab-span">	</span></span>// have joined already</p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span>r.join(</span><span class="s13">\bob</span><span class="s2">);<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// rejoin under different name - alice fades away</p>
-<p class="p14"><span class="Apple-tab-span">	</span>r.leave;</p>
-<p class="p14"><span class="Apple-tab-span">	</span>r.join(<span class="s13">\bob</span>);<span class="Apple-tab-span">	</span></p>
-<p class="p14"><span class="Apple-tab-span">	</span>r.nickname; <span class="s12">// nickname</span></p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// nickname and clientID - Each person in the group should have a unique ID from 0 to 31.</p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// one can either agree on unique IDs beforehand (e.g. with a deck of numbered cards),<span class="Apple-converted-space"> </span></p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// or rely on the default, lowestFreeID, which usually works unless many people join</p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// at the same time.<span class="Apple-converted-space"> </span></p>
+<p class="p15"><span class="Apple-tab-span">	</span>r.nameIsFree(<span class="s11">\dada</span>);</p>
+<p class="p15"><span class="Apple-tab-span">	</span>r.nameIsFree(<span class="s11">\alice</span>);</p>
+<p class="p15"><span class="Apple-tab-span">	</span>r.join(<span class="s11">\alice</span>);</p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span>r.join(</span><span class="s11">\alice</span><span class="s2">);<span class="Apple-tab-span">	</span></span>// have joined already</p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span>r.join(</span><span class="s11">\bob</span><span class="s2">);<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// rejoin under different name - alice fades away</p>
+<p class="p15"><span class="Apple-tab-span">	</span>r.leave;</p>
+<p class="p15"><span class="Apple-tab-span">	</span>r.join(<span class="s11">\bob</span>);<span class="Apple-tab-span">	</span></p>
+<p class="p15"><span class="Apple-tab-span">	</span>r.nickname; <span class="s12">// nickname</span></p>
 <p class="p4"><br></p>
-<p class="p14"><span class="Apple-tab-span">	</span>r.servers.collect(<span class="s10">_</span>.addr);</p>
+<p class="p15"><span class="Apple-tab-span">	</span>r.servers.collect(<span class="s10">_</span>.addr);</p>
 <p class="p4"><span class="Apple-tab-span">	</span></p>
 <p class="p4"><span class="Apple-tab-span">	</span></p>
 <p class="p4"><br></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// make some OSC responder</p>
-<p class="p14"><span class="Apple-tab-span">	</span>g = <span class="s10">OSCresponder</span>(<span class="s10">nil</span>, <span class="s13">'/chat'</span>, {<span class="s10">|t,r,msg|</span> (<span class="s11">"&gt;"</span> + msg[1] + <span class="s11">":"</span> + msg[2]).postln }).add;<span class="Apple-converted-space"> <span class="Apple-tab-span">	</span></span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// send to one address. This may not yet exist and fail.<span class="Apple-tab-span">	</span></p>
-<p class="p14"><span class="Apple-tab-span">	</span>r.addrs[<span class="s13">\alice</span>].sendMsg(<span class="s13">'/chat'</span>, <span class="s11">"alice"</span>, <span class="s11">"hi all."</span>);<span class="Apple-converted-space"> </span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// if you are not sure if a participant is perhaps absent</p>
-<p class="p15"><span class="s2"><span class="Apple-tab-span">	</span>r.send(</span>\alice<span class="s2">, </span>'/chat'<span class="s2">, </span>\alice<span class="s2">, </span><span class="s11">"hi alice"</span><span class="s2">);</span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// if you want to send to everyone, use the name \all:</p>
-<p class="p15"><span class="s2"><span class="Apple-tab-span">	</span>r.send(</span>\all<span class="s2">, </span>'/chat'<span class="s2">, </span>\alice<span class="s2">, </span><span class="s11">"hi all"</span><span class="s2">);</span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// multiple names</p>
-<p class="p15"><span class="s2"><span class="Apple-tab-span">	</span>r.send([</span>\alice<span class="s2">, </span>\john<span class="s2">], </span>'/chat'<span class="s2">, </span>\alice<span class="s2">, </span><span class="s11">"hi alice, hi john"</span><span class="s2">);</span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span>g.remove; </span>// remove responder</p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// make some OSC responder</p>
+<p class="p15"><span class="Apple-tab-span">	</span>g = <span class="s10">OSCresponder</span>(<span class="s10">nil</span>, <span class="s11">'/chat'</span>, {<span class="s10">|t,r,msg|</span> (<span class="s13">"&gt;"</span> + msg[1] + <span class="s13">":"</span> + msg[2]).postln }).add;<span class="Apple-converted-space"> <span class="Apple-tab-span">	</span></span></p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// send to one address. This may not yet exist and fail.<span class="Apple-tab-span">	</span></p>
+<p class="p15"><span class="Apple-tab-span">	</span>r.addrs[<span class="s11">\alice</span>].sendMsg(<span class="s11">'/chat'</span>, <span class="s13">"alice"</span>, <span class="s13">"hi all."</span>);<span class="Apple-converted-space"> </span></p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// if you are not sure if a participant is perhaps absent</p>
+<p class="p16"><span class="s2"><span class="Apple-tab-span">	</span>r.send(</span>\alice<span class="s2">, </span>'/chat'<span class="s2">, </span>\alice<span class="s2">, </span><span class="s13">"hi alice"</span><span class="s2">);</span></p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// if you want to send to everyone, use the name \all:</p>
+<p class="p16"><span class="s2"><span class="Apple-tab-span">	</span>r.send(</span>\all<span class="s2">, </span>'/chat'<span class="s2">, </span>\alice<span class="s2">, </span><span class="s13">"hi all"</span><span class="s2">);</span></p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// multiple names</p>
+<p class="p16"><span class="s2"><span class="Apple-tab-span">	</span>r.send([</span>\alice<span class="s2">, </span>\john<span class="s2">], </span>'/chat'<span class="s2">, </span>\alice<span class="s2">, </span><span class="s13">"hi alice, hi john"</span><span class="s2">);</span></p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span>g.remove; </span>// remove responder</p>
 <p class="p4"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span></span>// server side:</p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span>r.servers; </span>// a dictionary with all servers</p>
-<p class="p14"><span class="Apple-tab-span">	</span>r.servers.do { <span class="s10">|server|</span> server.makeWindow }; <span class="s12">// make a window for each server</span></p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span></span>// server side:</p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span>r.servers; </span>// a dictionary with all servers</p>
+<p class="p15"><span class="Apple-tab-span">	</span>r.servers.do { <span class="s10">|server|</span> server.makeWindow }; <span class="s12">// make a window for each server</span></p>
 <p class="p4"><span class="Apple-tab-span">	</span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span>s.boot; </span>// boot localhost</p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span>s.boot; </span>// boot localhost</p>
 <p class="p4"><span class="Apple-tab-span">	</span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span></span>// share a SynthDef with all participants</p>
-<p class="p14"><span class="Apple-tab-span">	</span>(</p>
-<p class="p16"><span class="s2"><span class="Apple-tab-span">	</span></span>SynthDef<span class="s2">(</span><span class="s13">\xxx</span><span class="s2">, {</span>|out, zzf = 440, sustain = 1, mod = 0.5, amp = 0.1, pan|</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s10">var</span> env = <span class="s10">Line</span>.kr(1, 0, sustain, doneAction: 2);</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s10">Out</span>.ar(out,</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s10">Pan2</span>.ar(</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s10">RLPF</span>.ar(</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s10">LFPulse</span>.ar(zzf, 0, <span class="s10">SinOsc</span>.kr(mod * zzf)),</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>zzf * (env.cubed + mod + 0.5),</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>0.2</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>),</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>pan, env * amp</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>))</p>
-<p class="p14"><span class="Apple-tab-span">	</span>}).share;</p>
-<p class="p14"><span class="Apple-tab-span">	</span>)</p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span></span>// share a SynthDef with all participants</p>
+<p class="p15"><span class="Apple-tab-span">	</span>(</p>
+<p class="p17"><span class="s2"><span class="Apple-tab-span">	</span></span>SynthDef<span class="s2">(</span><span class="s11">\xxx</span><span class="s2">, {</span>|out, zzf = 440, sustain = 1, mod = 0.5, amp = 0.1, pan|</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s10">var</span> env = <span class="s10">Line</span>.kr(1, 0, sustain, doneAction: 2);</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s10">Out</span>.ar(out,</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s10">Pan2</span>.ar(</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s10">RLPF</span>.ar(</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s10">LFPulse</span>.ar(zzf, 0, <span class="s10">SinOsc</span>.kr(mod * zzf)),</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>zzf * (env.cubed + mod + 0.5),</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>0.2</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>),</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>pan, env * amp</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>))</p>
+<p class="p15"><span class="Apple-tab-span">	</span>}).share;</p>
+<p class="p15"><span class="Apple-tab-span">	</span>)</p>
 <p class="p4"><span class="Apple-tab-span">	</span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span>r.synthDefs; </span>// stored here, so participants can be updated.</p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span>r.synthDefs; </span>// stored here, so participants can be updated.</p>
 <p class="p4"><span class="Apple-tab-span">	</span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span></span><span class="s10">SynthDescLib</span><span class="s2">.global.at(</span><span class="s13">\xxx</span><span class="s2">); </span>// it has arrived here, too.</p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span>r.synthDescs; </span>// any shared descriptions are here</p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span></span><span class="s10">SynthDescLib</span><span class="s2">.global.at(</span><span class="s11">\xxx</span><span class="s2">); </span>// it has arrived here, too.</p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span>r.synthDescs; </span>// any shared descriptions are here</p>
 <p class="p4"><span class="Apple-tab-span">	</span></p>
-<p class="p14"><span class="Apple-tab-span">	</span>(</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="s10">Tdef</span>(<span class="s13">\x</span>, {<span class="Apple-converted-space"> </span></p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>loop {<span class="Apple-converted-space"> </span></p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>0.12.wait;<span class="Apple-converted-space"> </span></p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>(server: r.servers.choose, instrument: <span class="s13">\xxx</span>,<span class="Apple-converted-space"> </span></p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>zzf: exprand(300, 11111), mod: 0.03, sustain: 0.1</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>).play;</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}<span class="Apple-converted-space"> </span></p>
-<p class="p14"><span class="Apple-tab-span">	</span>}).play</p>
-<p class="p14"><span class="Apple-tab-span">	</span>);</p>
+<p class="p15"><span class="Apple-tab-span">	</span>(</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="s10">Tdef</span>(<span class="s11">\x</span>, {<span class="Apple-converted-space"> </span></p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>loop {<span class="Apple-converted-space"> </span></p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>0.12.wait;<span class="Apple-converted-space"> </span></p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>(server: r.servers.choose, instrument: <span class="s11">\xxx</span>,<span class="Apple-converted-space"> </span></p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>zzf: exprand(300, 11111), mod: 0.03, sustain: 0.1</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>).play;</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}<span class="Apple-converted-space"> </span></p>
+<p class="p15"><span class="Apple-tab-span">	</span>}).play</p>
+<p class="p15"><span class="Apple-tab-span">	</span>);</p>
 <p class="p4"><span class="Apple-tab-span">	</span></p>
 <p class="p4"><span class="Apple-tab-span">	</span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span></span>// test if pattern works here:</p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span></span>// test if pattern works here:</p>
 <p class="p4"><span class="Apple-tab-span">	</span></p>
-<p class="p14"><span class="Apple-tab-span">	</span>(</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="s10">Pdef</span>(<span class="s13">\x</span>,<span class="Apple-converted-space"> </span></p>
-<p class="p16"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>Pbind<span class="s2">(</span></p>
-<p class="p15"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>\instrument<span class="s2">, </span>\xxx<span class="s2">,</span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>//<span class="Apple-tab-span">	</span>\server, r.servers[r.nickname],</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s13">\zzf</span>, <span class="s10">Pseq</span>([8700, 800, 720], <span class="s10">inf</span>),</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s13">\mod</span>, <span class="s10">Pwhite</span>(0.1, 0.7, <span class="s10">inf</span>),</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s13">\dur</span>, <span class="s10">Prand</span>([0.3, 0.5, <span class="s10">Pn</span>(0.04, 5)], <span class="s10">inf</span>)</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>)</p>
-<p class="p14"><span class="Apple-tab-span">	</span>).play</p>
-<p class="p14"><span class="Apple-tab-span">	</span>)</p>
+<p class="p15"><span class="Apple-tab-span">	</span>(</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="s10">Pdef</span>(<span class="s11">\x</span>,<span class="Apple-converted-space"> </span></p>
+<p class="p17"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>Pbind<span class="s2">(</span></p>
+<p class="p16"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>\instrument<span class="s2">, </span>\xxx<span class="s2">,</span></p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>//<span class="Apple-tab-span">	</span>\server, r.servers[r.nickname],</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s11">\zzf</span>, <span class="s10">Pseq</span>([8700, 800, 720], <span class="s10">inf</span>),</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s11">\mod</span>, <span class="s10">Pwhite</span>(0.1, 0.7, <span class="s10">inf</span>),</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s11">\dur</span>, <span class="s10">Prand</span>([0.3, 0.5, <span class="s10">Pn</span>(0.04, 5)], <span class="s10">inf</span>)</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>)</p>
+<p class="p15"><span class="Apple-tab-span">	</span>).play</p>
+<p class="p15"><span class="Apple-tab-span">	</span>)</p>
 <p class="p4"><span class="Apple-tab-span">	</span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span></span>// send synth messages to random participants:</p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span></span>// send synth messages to random participants:</p>
 <p class="p4"><span class="Apple-tab-span">	</span></p>
-<p class="p14"><span class="Apple-tab-span">	</span>(</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="s10">Pdef</span>(<span class="s13">\x</span>,<span class="Apple-converted-space"> </span></p>
-<p class="p16"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>Pbind<span class="s2">(</span></p>
-<p class="p15"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>\instrument<span class="s2">, </span>\xxx<span class="s2">,</span></p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s13">\server</span>, <span class="s10">Pfunc</span> { r.servers.choose } .trace,</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s13">\zzf</span>, <span class="s10">Pseq</span>([8700, 800, 720], <span class="s10">inf</span>),</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s13">\mod</span>, <span class="s10">Pwhite</span>(0.1, 0.7, <span class="s10">inf</span>),</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s13">\dur</span>, <span class="s10">Prand</span>([0.3, 0.5, <span class="s10">Pn</span>(0.04, 5)], <span class="s10">inf</span>)</p>
-<p class="p14"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>)</p>
-<p class="p14"><span class="Apple-tab-span">	</span>).play</p>
-<p class="p14"><span class="Apple-tab-span">	</span>)</p>
+<p class="p15"><span class="Apple-tab-span">	</span>(</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="s10">Pdef</span>(<span class="s11">\x</span>,<span class="Apple-converted-space"> </span></p>
+<p class="p17"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>Pbind<span class="s2">(</span></p>
+<p class="p16"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>\instrument<span class="s2">, </span>\xxx<span class="s2">,</span></p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s11">\server</span>, <span class="s10">Pfunc</span> { r.servers.choose } .trace,</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s11">\zzf</span>, <span class="s10">Pseq</span>([8700, 800, 720], <span class="s10">inf</span>),</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s11">\mod</span>, <span class="s10">Pwhite</span>(0.1, 0.7, <span class="s10">inf</span>),</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s11">\dur</span>, <span class="s10">Prand</span>([0.3, 0.5, <span class="s10">Pn</span>(0.04, 5)], <span class="s10">inf</span>)</p>
+<p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>)</p>
+<p class="p15"><span class="Apple-tab-span">	</span>).play</p>
+<p class="p15"><span class="Apple-tab-span">	</span>)</p>
 <p class="p4"><span class="Apple-tab-span">	</span></p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span></span>// leave republic.</p>
-<p class="p14"><span class="Apple-tab-span">	</span>r.leave;</p>
-<p class="p13"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// free all resources</p>
-<p class="p14"><span class="Apple-tab-span">	</span>r.free;<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span></span>// leave republic.</p>
+<p class="p15"><span class="Apple-tab-span">	</span>r.leave;</p>
+<p class="p14"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// free all resources</p>
+<p class="p15"><span class="Apple-tab-span">	</span>r.free;<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></p>
 <p class="p4"><br></p>
 <p class="p4"><br></p>
 <p class="p4"><br></p>

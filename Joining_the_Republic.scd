@@ -36,38 +36,13 @@ unixCmd("open" + quote(Platform.userExtensionDir))
 // * Make sure: are you in the same network?
 
 
-//________________________Step 3 - CONFIGURE/ENABLE BROADCASTING ____________
-// someone finds out the broadcast IP (it's the same for everyone)
 
-		// usually the first one is 192.168.178.255, or 192.168.0.255 - use this
-	Republic.getBroadcastIPs.postcs;
+//________________________Step 3 - CREATE A REPUBLIC _______________________
 
-		// do it at a lower level if necessary 
-      unixCmd("ifconfig | grep broadcast | awk '{print $NF}'") 
-// on linux
-      unixCmdGetStdOut("ifconfig | grep Bcast | awk 'BEGIN {FS = \"[ :]+\"}{print $6}'");
+r = Republic.new.makeDefault;
+EZRepublicGui(republic: r);
 
-// Or do "ifconfig" in Terminal and search the printout for "broadcast" or "Bcast"
-
-		// enable broadcasting in SC3
-	NetAddr.broadcastFlag = true;
-
-
-//________________________Step 4 - CREATE A REPUBLIC _______________________
-// for everyone the same: make a republic with the broadcast IP found in step 3
-
-// everyone on OSX, this will probably work fine:
-r = Republic(NetAddr("192.168.178.255", 57120)).makeDefault;
-
-// on Linux with SwingOSC, the language port sometimes jumps, so we use:
-Republic.fixedLangPort = false;
-r = Republic(NetAddrMP("192.168.1.255").ports_( (57120..57124) ) ).makeDefault;
-	
-		// optional: you can see other members' names and IDs 
-		// on a GUI, so you can choose a unique name. 
-	EZRepublicGui(republic: r);
-
-//________________________Step 5 - JOIN THE REPUBLIC _______________________
+//________________________Step 4 - JOIN THE REPUBLIC _______________________
 // let's give every person 
 //		a unique NICKNAME (a symbol),
 //     	and an ID - a unique integer between (0..31).
@@ -108,21 +83,7 @@ Blackboard.new.useDocument_(false).start;
 // to share your code, evaluate the following:
 // (use tab to chat from chat window)
 
-(
-	g = OSCresponder(nil, '/hist', {|t,r,msg| 
-		History.enter(msg[2].asString, msg[1]) 
-	}).add; 	
-	
-	History.start;
-	History.makeWin;
-	History.forwardFunc = { |code|
-		r.send(\all, '/hist', r.nickname, code) 
-	};
-	History.localOff;
-	EZRepublicGui(republic: r);
-);
-
-
+r.openHistory;
 
 // what to do now?
 
@@ -166,7 +127,6 @@ History.document;
 
 // For quitting republic:
 (
-History.stop;
 g.remove;
 r.leave;
 );
