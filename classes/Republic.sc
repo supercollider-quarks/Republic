@@ -33,10 +33,10 @@ Republic : SimpleRepublic {
 			republicServer = RepublicServer(this, clientID); // interface to the event system
 			super.join(name);
 			
-			synthDefResp = OSCresponderNode(nil, synthDefSendCmd, { | t,r,msg |
+			synthDefResp = OSCresponderNode(nil, synthDefSendCmd, { | t, r, msg |
 				var name = msg[1];
-				var bytes = msg[2];
-				var sentBy = msg[3];
+				var sentBy = msg[2];
+				var bytes = msg[3];
 				this.storeRemoteSynthDef(name, bytes, sentBy)
 			}).add;
 		};
@@ -223,11 +223,16 @@ Republic : SimpleRepublic {
 	}
 	
 	sendSynthDefBytes { | who, defName, bytes |
-		this.send(who, synthDefSendCmd, defName, bytes, nickname);
+		this.send(who, synthDefSendCmd, defName, nickname, bytes);
 		this.sendServer(who, "/d_recv", bytes);
 	}
 
-
+	synthDescs {
+		^SynthDescLib.global.synthDescs.select { |desc| 
+			desc.metadata.notNil and: { desc.metadata[\sentBy].notNil } 
+		}
+	}
+	
 	storeRemoteSynthDef { | name, bytes, sentBy |
 
 		var lib = SynthDescLib.global;
