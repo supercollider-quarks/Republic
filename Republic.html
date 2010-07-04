@@ -25,6 +25,8 @@ p.p15 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco}
 p.p16 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #cd0b0b}
 p.p17 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #008417}
 p.p18 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #2024c7}
+p.p19 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #008225}
+p.p20 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000}
 span.s1 {font: 18.0px Helvetica}
 span.s2 {color: #000000}
 span.s3 {text-decoration: underline}
@@ -38,6 +40,7 @@ span.s10 {color: #2024c7}
 span.s11 {color: #008417}
 span.s12 {color: #cd0b0b}
 span.s13 {color: #737373}
+span.s14 {color: #008225}
 span.Apple-tab-span {white-space:pre}
 </style>
 </head>
@@ -176,7 +179,6 @@ span.Apple-tab-span {white-space:pre}
 <p class="p15"><span class="Apple-tab-span">	</span>)</p>
 <p class="p4"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></p>
 <p class="p16"><span class="s2"><span class="Apple-tab-span">	</span></span><span class="s10">SynthDescLib</span><span class="s2">.global.synthDescs.at(</span><span class="s11">\xxx</span><span class="s2">); </span>// it has arrived here, too.</p>
-<p class="p16"><span class="s2"><span class="Apple-tab-span">	</span>r.synthDescs; </span>// any shared descriptions are here</p>
 <p class="p4"><span class="Apple-tab-span">	</span></p>
 <p class="p15"><span class="Apple-tab-span">	</span>(</p>
 <p class="p15"><span class="Apple-tab-span">	</span><span class="s10">Tdef</span>(<span class="s11">\x</span>, {<span class="Apple-converted-space"> </span></p>
@@ -195,8 +197,8 @@ span.Apple-tab-span {white-space:pre}
 <p class="p15"><span class="Apple-tab-span">	</span>(</p>
 <p class="p15"><span class="Apple-tab-span">	</span><span class="s10">Pdef</span>(<span class="s11">\x</span>,<span class="Apple-converted-space"> </span></p>
 <p class="p18"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>Pbind<span class="s2">(</span></p>
-<p class="p17"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>\instrument<span class="s2">, </span>\xxx<span class="s2">,</span></p>
-<p class="p16"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>//<span class="Apple-tab-span">	</span>\server, r.servers[r.nickname],</p>
+<p class="p19"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>\instrument<span class="s2">, </span>\xxx<span class="s2">,</span></p>
+<p class="p20"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s14">\server</span>, r.servers[r.nickname],</p>
 <p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s11">\zzf</span>, <span class="s10">Pseq</span>([8700, 800, 720], <span class="s10">inf</span>),</p>
 <p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s11">\mod</span>, <span class="s10">Pwhite</span>(0.1, 0.7, <span class="s10">inf</span>),</p>
 <p class="p15"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s11">\dur</span>, <span class="s10">Prand</span>([0.3, 0.5, <span class="s10">Pn</span>(0.04, 5)], <span class="s10">inf</span>)</p>

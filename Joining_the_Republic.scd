@@ -1,67 +1,77 @@
 
  
-     /////////////////////////////////////////////////////////
-    /////////////////// Joining the Republic  ///////////////
-   /////////////////////////////////////////////////////////
-
-    
-    // The class Republic allows a very simple organisation of
-   // cooperation in changing groups over the local network.
-  // It automatically administers each member's address and server
- // More details: see SimpleRepublic and Republic helpfiles
-
-
-
- //________________________Step 1 - INSTALLING ___________________________
-// is it installed already?
-
-\Republic.asClass.notNil; // true if installed already.
-
-// if you have Quarks working, do this:
-"Republic".include; // ... and recompile if needed.
-
-// if not, get the Republic folder and drop it into your system extensions folder
-
-unixCmd("open" + quote(Platform.userExtensionDir))
+	     /////////////////////////////////////////////////////////
+	    /////////////////// Joining the Republic  ///////////////
+	   /////////////////////////////////////////////////////////
+	
+	    
+	    // The class Republic allows a very simple organisation of
+	   // cooperation in changing groups over the local network.
+	  // It automatically administers each member's address and server
+	 // More details: see SimpleRepublic and Republic helpfiles
 
 
-\Republic.asClass.notNil; // should be true now! 
+	
+	 //________________________Step 1 - INSTALLING ___________________________
+	// is it installed already?
+	
+	\Republic.asClass.notNil; // true if installed already.
+	
+		// if you have Quarks working, do this:
+		"Republic".include; // ... and recompile if needed.
+	
+		// if not, get the Republic folder and drop it into your system extensions folder
+	
+		unixCmd("open" + quote(Platform.userExtensionDir))
+	
+	
+		\Republic.asClass.notNil; // should be true now! 
+	
+	
+	//________________________Step 2 - AGREE ON A COMMON NETWORK________________
+	// two options: 
+	// 2.1 Take an existing network or one person creates a local network, all the others join it.
+	// 2.2 Make sure: are you in the same network?
+	
+	
+	
+	//________________________Step 3 - CREATE A REPUBLIC _______________________
+	
+	r = Republic.new.makeDefault;
+	r.gui; // add a display if you like.
+	
+	
+	//________________________Step 4 - JOIN THE REPUBLIC _______________________
+	// let's give every person 
+	//		a unique NICKNAME (a symbol),
+	//     	and an ID - a unique integer between (0..31).
+	// then join the Republic:
+	
+	
+	
+		// put YOUR unique name and id here!
+		// you can also leave out id and you will be assigned a random one
+	
+		r.join(\yourName, 0);  // <-- your unique name / id here
+	
+	
+	
+	//________________________Step 5 - TEST AND KEEP THE SETUP _______________________
+	
+		
+		// now the different participants should appear by themselves
+		// you see the members appear on the post window.
+	
+		r.addrs; // see whose addresses are collected already
+		r.servers; // see whose servers are collected already
+		
+	
+	// NOW save your personal copy of this file, 
+	// e.g. under the name My_Republic.scd.
+	
 
 
-//________________________Step 2 - AGREE ON A COMMON NETWORK________________
-// two options: 
-// * Take an existing network
-// * one person creates a local network, all the others join it.
 
-// * Make sure: are you in the same network?
-
-
-
-//________________________Step 3 - CREATE A REPUBLIC _______________________
-
-r = Republic.new.makeDefault;
-EZRepublicGui(republic: r);
-
-//________________________Step 4 - JOIN THE REPUBLIC _______________________
-// let's give every person 
-//		a unique NICKNAME (a symbol),
-//     	and an ID - a unique integer between (0..31).
-// then join the Republic:
-
-	// remove <> signs to make this line legal code,
-	// and put YOUR unique name and id here!
-	// you can also leave out id and you will be assigned a random one
-
-	r.join( <\yourName>, <1> ); 
-
-
-///// NOW save your personal copy of this file, e.g. under the name My_Republic.scd.
-
-	// now the different participants should appear by themselves
-	// you see the members appear on the post window.
-
-	r.addrs; // see whose addresses are collected already
-	r.servers; // see whose servers are collected already
 
 
 
@@ -70,20 +80,10 @@ EZRepublicGui(republic: r);
   /////////////////////////////////////////////////////////
 
 
-
-// Blackboard:
-// using text document:
-Blackboard.new.start;
-
-// not using document
-// esp. linux and windows
-
-Blackboard.new.useDocument_(false).start;
-
 // to share your code, evaluate the following:
 // (use tab to chat from chat window)
 
-r.openHistory;
+r.shareHistory;
 
 // what to do now?
 
@@ -134,4 +134,15 @@ r.leave;
 // when you just end SC or recompile, you will leave automatically.
 
 
+
+//////////////////////////////////////////////////////////////////////////////////////
+
+// Blackboard:
+// using text document:
+Blackboard.new.start;
+
+// not using document
+// esp. linux and windows
+
+Blackboard.new.useDocument_(false).start;
 
