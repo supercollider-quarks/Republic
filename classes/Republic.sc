@@ -231,7 +231,7 @@ Republic : SimpleRepublic {
 		
 		// post a prototype event:	
 		dict.at(name).controls.do { |ctl| 
-			args = args.add(ctl.name.asSymbol).add(ctl.defaultValue.round(0.00001))
+			args = args.add(ctl.name.asSymbol).add((ctl.defaultValue ? 0.0).round(0.00001))
 		};
 		"// SynthDef \"%\" added:\n".postf(name);
 		if(postSource) {
