@@ -19,7 +19,7 @@ SimpleRepublic {
 		broadcastAddr = broadcastAddr ?? {
 			NetAddrMP("255.255.255.255", 57120 + (0..7))
 		};
-		broadcastAddr.checkServesLangPort;
+		// broadcastAddr.checkServesLangPort;
 		this.switchBroadcast(true);
 		
 		addrs = ();
