@@ -86,7 +86,7 @@ SharedServer : Server {
 					numAudio + audioBusOffset,
 					audioBusOffset
 				);
-		"SharedServer % config:\naudio buses: % control buses %\n"
+		"SharedServer % audio buses: % control buses %\n"
 			.postf(name, numAudio, numControl);
 	}
 	
@@ -101,7 +101,7 @@ SharedServer : Server {
 					numBuffers + bufferOffset, 
 					bufferOffset
 				);
-		"SharedServer % config:\nbuffers: %\n".postf(name, numBuffers);
+		"SharedServer % buffers: %\n".postf(name, numBuffers);
 	}
 	
 	calcOffset {
@@ -175,10 +175,6 @@ SharedServer : Server {
 
 
 + Server {
-	
-	assureNotified {
-		this.sendBundle(nil, ['/error', -1],['/notify', 1],['/error', -2]);
-	}
 
 	remove {
 		Server.all.remove(this);

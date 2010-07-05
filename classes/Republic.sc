@@ -1,69 +1,46 @@
 
 
 Republic : SimpleRepublic {
+	
 	classvar <maxID = 31;
 
 	var <serverPort = 57109;
 	var <servers, <>latency;
 	var <republicServer, <clientID, <>options;
 	var <synthDefResp, synthDefSendCmd;
-	var setAllocator, <allClientIDs;
+	var <allClientIDs;
 	var <>onJoinAction;
 	
-	var <>usesRandIDs = true, <>usesSeparateState = true;
+	var <>usesRandIDs = true, <>usesSeparateState = true, <>postSource = true;
 	
 	init {
 		super.init;
 		servers = ();
 		allClientIDs = ();
 		synthDefSendCmd =  republicName.asString ++ "/synthDef";
-		
-		setAllocator = { |serv| // better take this one, we use one for all
-			serv.nodeAllocator = republicServer.nodeAllocator;
-		};
 		options = this.defaultServerOptions;
 	}
 	
 	join { | name, argClientID, argServerPort |
+		
 		name = name.asSymbol;
 		if (this.nameIsFree(name)) {
 			clientID = argClientID ?? { this.nextFreeID };
 			serverPort = argServerPort ? serverPort;
 			
-			republicServer = RepublicServer(this, clientID); // interface to the event system
 			super.join(name);
-			
-			synthDefResp = OSCresponderNode(nil, synthDefSendCmd, { | t, r, msg |
-				
-				var sentBy = msg[1];
-				var name = msg[2];
-				var sourceCode = msg[3];
-				var bytes = msg[4];
-				
-				this.storeRemoteSynthDef(sentBy, name, sourceCode, bytes)
-			}).add;
-		};
-	}
-	
-	assemble {
-		super.assemble; 
-				// make servers if clientID was added, 
-				// and server is missing
-		if (clientID.notNil) { 
-			presence.keys.do { |key|
-				var serv = servers[key];
-				if (serv.isNil) { this.addServer(key, addrs[key]) }
-			};
+			this.initEventSystem;
 		}
 	}
 	
 	leave { |free = false| 
+		
 		synthDefResp.remove;
-		servers.do(this.removeServer(_));
+		servers.do { |sharedServer| sharedServer.freeAll };
 		try { servers.at(nickname).quit };
-			// quit all my nodes on the server if possible? 
-		servers.do { }; 
+		servers.do(this.removeServer(_));
 		servers = ();
+		
 		super.leave(free);	// keep lurking by default
 	}
 			
@@ -121,32 +98,34 @@ Republic : SimpleRepublic {
 		
 	addServer { | name, addr, port, config |
 		
-		var server;
-		server = Server.named.at(name);
-
-		if(server.isNil) {
-			"\n Republic: new server added: %\n".postf(name);
+		var server = Server.named.at(name);
+		var isLocalAndInRepublic = addrs.at(nickname).notNil and: {
+				addrs.at(nickname).hostname == addr.hostname
+		};
+		// if nonexistent or in the republic already but local, we just add the server anew
+		// this only happens when we keep several republics with the same name locally
+		if(server.isNil or: isLocalAndInRepublic) {
 			server = this.makeNewServer(name, addr, port, config);
 		} {
-			"	server % already there - fine.\n".postf(name);
-			server.tree = setAllocator;
-			server.boot;
+			this.displayServer(server);
+			"\nRepublic (%): server % already there - fine.\n".postf(nickname, name);
+			"You may still need to boot the server\n".postln;
 		};
 			
 		servers.put(name, server);
-		server.assureNotified;
+		server.sendBundle(nil, ['/error', 0], ['/notify', 1]);
 		
-		if(verbose) { "Republic(%): added server %\n".postf(nickname, name); };
 		// send all synthdefs to the new server
-		this.shareSynthDefs(name);
-		setAllocator.value(server);
-		
+		this.shareSynthDefs(name);		
 	}
 	
 	removeServer { | who |
 		servers.removeAt(who).remove;
 	}
 	
+	displayServer { |server|
+		defer { try { server.makeGui } };	
+	}
 	
 	makeNewServer { | name, addr, port, config |
 			
@@ -158,16 +137,16 @@ Republic : SimpleRepublic {
 			
 			// make a new server representation
 			newServer = SharedServer.new(name, NetAddr(addr, port), clientID: clientID);
-			newServer.tree = setAllocator;
+			
+			"\nRepublic (%): new server added: %\n".postf(nickname, name);
 			
 			if(name == nickname) {
 				newServer.options = options;
-				defer { try { newServer.makeGui } };
-				newServer.waitForBoot { onJoinAction.value(this, newServer) };
-				
+				this.displayServer(newServer);
+				newServer.waitForBoot { onJoinAction.value(this, newServer) };		
 			} {
 				newServer.options = this.defaultServerOptions(config);
-				"	server % not my own, assume running.\n".postf(name);
+				"\nRepublic (%): server % not my own, assume running.\n".postf(nickname, name);
 				newServer.serverRunning_(true);
 			};
 			
@@ -193,18 +172,18 @@ Republic : SimpleRepublic {
 		^res
 	}
 	
-	// sharing synth desf
+	// sharing synth defs
 	
 	
 	shareSynthDefs { | who |
-		
 		fork {
 			rrand(1.0, 2.0).wait; // wait for the other server to boot
 			SynthDescLib.global.synthDescs.do { |synthDesc|
-					var sentBy, bytes, doSend;
+					var sentBy, bytes, doSend, sourceCode;
 					synthDesc.metadata !? { 
 						sentBy = synthDesc.metadata.at(\sentBy);
-						bytes = synthDesc.metadata.bytes;
+						bytes = synthDesc.metadata.at(\bytes);
+						sourceCode = synthDesc.metadata.at(\sourceCode);
 					};
 					
 					doSend = sentBy.notNil and: { bytes.notNil }
@@ -213,7 +192,7 @@ Republic : SimpleRepublic {
 								or: { addrs.at(sentBy).isNil } // has left
 							};
 					if(doSend) {
-						this.sendSynthDefBytes(who, synthDesc.name, synthDesc.metadata.bytes);
+						this.sendSynthDefBytes(who, synthDesc.name, bytes, sourceCode);
 						0.1.rand.wait; // distribute load
 					}
 			}
@@ -255,6 +234,11 @@ Republic : SimpleRepublic {
 			args = args.add(ctl.name.asSymbol).add(ctl.defaultValue.round(0.00001))
 		};
 		"// SynthDef \"%\" added:\n".postf(name);
+		if(postSource) {
+			sourceCode = format("%.share", sourceCode);
+			if(sourceCode.find("\n").notNil) { sourceCode = format("(\n%\n);", sourceCode) };
+			"\n%\n".postf(sourceCode);
+		};
 		().putPairs(args).postcs;
 	}
 	
@@ -287,6 +271,33 @@ Republic : SimpleRepublic {
 		^this.myServer
 	}
 
+	initEventSystem {
+		synthDefResp = OSCresponderNode(nil, synthDefSendCmd, { | t, r, msg |
+				
+				var sentBy = msg[1];
+				var name = msg[2];
+				var sourceCode = msg[3];
+				var bytes = msg[4];
+
+				this.storeRemoteSynthDef(sentBy, name, sourceCode, bytes)
+			}).add;
+			
+			// this is only an interface to the event system
+			republicServer = RepublicServer(this, clientID); 
+	}
+	
+	/*
+	assemble {
+		super.assemble; 
+				// make servers if clientID was added, 
+				// and server is missing
+		if (clientID.notNil) { 
+			presence.keys.do { |key|
+				var serv = servers[key];
+				if (serv.isNil) { this.addServer(key, addrs[key]) }
+			};
+		}
+	}*/
 
 
 }
@@ -321,7 +332,7 @@ RepublicServer {
 	}
 	
 	nextNodeID { |where|
-		 ^nodeAllocator.alloc
+		 ^nodeAllocator.value.alloc
 		// ^-1
 	}
 	
@@ -337,9 +348,9 @@ RepublicServer {
 		^republic.nickname
 	}
 	
-	// this needs some work
+	// this needs some work, other allocators..
 	newAllocators {
-		nodeAllocator = NodeIDAllocator(clientID, republic.options.initialNodeID);
+		nodeAllocator = { republic.myServer.nodeAllocator };
 	}
 
 	

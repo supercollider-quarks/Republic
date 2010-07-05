@@ -33,7 +33,7 @@ SimpleRepublic {
 	
 	join { |name|
 		name = name.asSymbol;
-		if (this.nameIsFree(name)) {		
+		if (this.nameIsFree(name)) {
 			nickname = name;
 			this.statusFunc;
 			skip.play;
