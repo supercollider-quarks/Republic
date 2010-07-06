@@ -286,7 +286,7 @@ Republic : SimpleRepublic {
 			republicServer = RepublicServer(this, clientID); 
 	}
 	
-	/*
+	
 	assemble {
 		super.assemble; 
 				// make servers if clientID was added, 
@@ -297,7 +297,7 @@ Republic : SimpleRepublic {
 				if (serv.isNil) { this.addServer(key, addrs[key]) }
 			};
 		}
-	}*/
+	}
 
 
 }
