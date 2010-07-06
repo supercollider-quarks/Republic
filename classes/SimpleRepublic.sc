@@ -191,18 +191,32 @@ SimpleRepublic {
 		^EZRepublicGui(parent, bounds, this);
 	}
 	
-	shareHistory {
+	shareHistory { |useShout = true, winWhere| 
+		if (useShout) { 
+			OSCresponder(nil, '/hist', {|t,r,msg| 
+				var who = msg[1];
+				var codeStr = msg[2].asString;
+				History.enter(codeStr, who);
+				if (codeStr.beginsWith(Shout.tag)) { 
+					defer { 
+						Shout((codeStr.drop(Shout.tag.size).reject(_ == $\n) + ("/" ++ who)).postcs) 
+					}
+				}; 
+			}).add; 	
+		} {
+			OSCresponder(nil, '/hist', {|t,r,msg| 
+				History.enter(msg[2].asString, msg[1]) 
+			}).add; 
+		} { 
 		
-		OSCresponder(nil, '/hist', {|t,r,msg| 
-			History.enter(msg[2].asString, msg[1]) 
-		}).add; 
+		};
 		
 		History.forwardFunc = { |code|
 			if(joined) { this.send(\all, '/hist', nickname, code) }
 		};	
 	
 		History.start;
-		History.makeWin;
+		History.makeWin(winWhere);
 		History.localOff;
 			
 	}
