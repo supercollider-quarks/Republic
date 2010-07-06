@@ -143,6 +143,8 @@ SimpleRepublic {
 		"\n\nRepublic: switched global NetAddr broadcast flag to %.\n".format(flag).postln;
 	}
 	
+	hasJoined { |name| ^addrs.at(name).notNil }
+	
 	makeResponder {
 		resp = OSCresponderNode(nil, republicName, 
 			{ |t,r,	msg, replyAddr|
@@ -153,8 +155,8 @@ SimpleRepublic {
 				otherID = msg[2];
 				extraData = msg[3..];
 												
-								
-				if(addrs.at(otherNick).isNil) {
+						
+				if(this.hasJoined(otherNick).not) {
 					addr = NetAddr(replyAddr.addr.asIPString, replyAddr.port);
 					this.addParticipant(otherNick, addr, otherID, extraData);
 					(" ---> % has joined the Republic. ---".format(otherNick)).postln;

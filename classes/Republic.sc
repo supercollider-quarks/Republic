@@ -24,12 +24,14 @@ Republic : SimpleRepublic {
 	join { | name, argClientID, argServerPort |
 		
 		name = name.asSymbol;
-		if (this.nameIsFree(name)) {
+		if (this.nameIsFree(name) and: argClientID.notNil) {
 			clientID = argClientID ?? { this.nextFreeID };
 			serverPort = argServerPort ? serverPort;
 			
 			super.join(name);
 			this.initEventSystem;
+		} { 
+			warn("could not join: name % is in use, or clientID was nil.");
 		}
 	}
 	
@@ -39,8 +41,9 @@ Republic : SimpleRepublic {
 		servers.do { |sharedServer| sharedServer.freeAll };
 		try { servers.at(nickname).quit };
 		servers.do(this.removeServer(_));
+		clientID = nil;
 		servers = ();
-		
+				
 		super.leave(free);	// keep lurking by default
 	}
 			
@@ -84,7 +87,7 @@ Republic : SimpleRepublic {
 		
 		addrs.put(key, addr); 
 		allClientIDs.put(key, otherClientID);
-		
+					
 		if (clientID.notNil) { // I play with my own id on remote server
 			this.addServer(key, addr, serverPort, config);
 		}
@@ -104,7 +107,7 @@ Republic : SimpleRepublic {
 		};
 		// if nonexistent or in the republic already but local, we just add the server anew
 		// this only happens when we keep several republics with the same name locally
-		if(server.isNil or: isLocalAndInRepublic) {
+		if(server.isNil or: isLocalAndInRepublic) { 
 			server = this.makeNewServer(name, addr, port, config);
 		} {
 			this.displayServer(server);
@@ -285,8 +288,11 @@ Republic : SimpleRepublic {
 			// this is only an interface to the event system
 			republicServer = RepublicServer(this, clientID); 
 	}
+
+	hasJoined { |name| ^servers.at(name).notNil }
+
 	
-	
+/*	
 	assemble {
 		super.assemble; 
 				// make servers if clientID was added, 
@@ -298,7 +304,7 @@ Republic : SimpleRepublic {
 			};
 		}
 	}
-
+*/
 
 }
 
