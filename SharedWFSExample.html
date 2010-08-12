@@ -38,7 +38,7 @@ span.Apple-tab-span {white-space:pre}
 <p class="p5">q.numPlayers = 8;<span class="Apple-tab-span">	</span>// agree on a maximum number</p>
 <p class="p2"><span class="Apple-tab-span">	</span></p>
 <p class="p3"><span class="Apple-tab-span">	</span>// prepare a shared server:<span class="Apple-converted-space"> </span></p>
-<p class="p3">q.options = <span class="s2">ServerOptions</span>.new</p>
+<p class="p3">q.options = <span class="s2">SharedServerOptions</span>.new</p>
 <p class="p3"><span class="Apple-tab-span">	</span>.numAudioBusChannels_(1024)</p>
 <p class="p3"><span class="Apple-tab-span">	</span>.numInputBusChannels_(8)</p>
 <p class="p3"><span class="Apple-tab-span">	</span>.numOutputBusChannels_(42);</p>
@@ -49,8 +49,8 @@ span.Apple-tab-span {white-space:pre}
 <p class="p2"><br></p>
 <p class="p3"><span class="s2">CmdPeriod</span>.add({ q.wfs.freeAll });<span class="Apple-tab-span">	</span>// frees only my own nodes, not all of them</p>
 <p class="p3">q.wfs.initTree;</p>
-<p class="p3">q.wfs.numClients_(8);</p>
-<p class="p3">q.wfs.reserveOtherBusses;</p>
+<p class="p3">q.wfs.numClients_(q.numPlayers);</p>
+
 <p class="p6">"I can play on chans: %\n"<span class="s1">.postf(q.wfs.myOuts);</span></p>
 <p class="p2"><br></p>
 <p class="p2"><br></p>
@@ -70,7 +70,7 @@ span.Apple-tab-span {white-space:pre}
 <p class="p3"><span class="Apple-tab-span">	</span>.states_([[<span class="s4">"Free All \nMy Sounds."</span>, <span class="s2">Color</span>.white, <span class="s2">Color</span>.green]])</p>
 <p class="p3"><span class="Apple-tab-span">	</span>.action_({ q.wfs.freeAll });</p>
 <p class="p2"><br></p>
-<p class="p3">q.wfs.makeWindow(q.wfsWin);</p>
+<p class="p3">q.wfs.makeGui(q.wfsWin);</p>
 <p class="p3">)</p>
 <p class="p2"><br></p>
 <p class="p2"><br></p>
