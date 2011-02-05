@@ -25,7 +25,7 @@ GetValue {
 		synth.register;
 		synth.addDependant(this);
 		resp = OSCresponder(server.addr, cmd, { |t,r,msg| 
-			value = msg[3..];
+			value = msg[3..].unbubble;
 			action.value(value);
 		});
 		resp.add;
