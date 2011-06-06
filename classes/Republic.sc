@@ -9,7 +9,7 @@ Republic : SimpleRepublic {
 	var <republicServer, <clientID, <>options;
 	var <synthDefResp, synthDefSendCmd;
 	var <allClientIDs;
-	var <>onJoinAction;
+	var <>onJoinServerAction;
 	
 	var <>usesRandIDs = true, <>usesSeparateState = true, <>postSource = true;
 	
@@ -21,17 +21,28 @@ Republic : SimpleRepublic {
 		options = this.defaultServerOptions;
 	}
 	
+	canJoin { |name, argClientID|
+
+		if (argClientID.isNil) { 
+			warn("Republic - % could not join: clientID was nil.".format(name));
+			^false;
+		};
+		^super.canJoin(name)
+	}
+	
 	join { | name, argClientID, argServerPort |
-		
+
 		name = name.asSymbol;
-		if (this.nameIsFree(name) and: argClientID.notNil) {
-			clientID = argClientID ?? { this.nextFreeID };
+		argClientID = argClientID ?? { this.nextFreeID }; 
+		
+		if (this.canJoin(name, argClientID)) {
+			if (this.hasJoined(nickname)) { this.leave };
+			nickname = name;
+			clientID = argClientID;
 			serverPort = argServerPort ? serverPort;
-			
-			super.join(name);
 			this.initEventSystem;
-		} { 
-			warn("could not join: name % is in use, or clientID was nil.");
+			
+			this.joinStart;			
 		}
 	}
 	
@@ -40,9 +51,11 @@ Republic : SimpleRepublic {
 		synthDefResp.remove;
 		servers.do { |sharedServer| sharedServer.freeAll };
 		try { servers.at(nickname).quit };
-		servers.do(this.removeServer(_));
+		servers.keysValuesDo(this.removeServer(_));
+		
+		"servers: %\n".postf(servers);
 		clientID = nil;
-		servers = ();
+	//	servers = ();
 				
 		super.leave(free);	// keep lurking by default
 	}
@@ -85,7 +98,7 @@ Republic : SimpleRepublic {
 
 	addParticipant { | key, addr, otherClientID, config |
 		
-		addrs.put(key, addr); 
+		super.addParticipant(key, addr); 
 		allClientIDs.put(key, otherClientID);
 					
 		if (clientID.notNil) { // I play with my own id on remote server
@@ -94,7 +107,7 @@ Republic : SimpleRepublic {
 	}
 			
 	removeParticipant { | key |
-		addrs.removeAt(key);
+		super.removeParticipant(key);
 		allClientIDs.removeAt(key);
 		this.removeServer(key); 
 	}
@@ -123,7 +136,8 @@ Republic : SimpleRepublic {
 	}
 	
 	removeServer { | who |
-		servers.removeAt(who).remove;
+		var oldserv = servers.removeAt(who).remove;
+		defer { try { oldserv.window.close } };
 	}
 	
 	displayServer { |server|
@@ -146,7 +160,12 @@ Republic : SimpleRepublic {
 			if(name == nickname) {
 				newServer.options = options;
 				this.displayServer(newServer);
-				newServer.waitForBoot { onJoinAction.value(this, newServer) };		
+				newServer.waitForBoot { 
+					0.5.wait; 
+					this.informServer;
+					0.5.wait;
+					onJoinServerAction.value(this, newServer) 
+				};		
 			} {
 				newServer.options = this.defaultServerOptions(config);
 				"\nRepublic (%): server % not my own, assume running.\n".postf(nickname, name);
@@ -176,12 +195,12 @@ Republic : SimpleRepublic {
 	}
 	
 	// sharing synth defs
-	
+	// should better happen only after the new server is really booted. later. 
 	
 	shareSynthDefs { | who |
 		fork {
-			rrand(1.0, 2.0).wait; // wait for the other server to boot
-			SynthDescLib.global.synthDescs.do { |synthDesc|
+			rrand(0.0, 1.0).wait; // wait for the other server to boot
+			this.synthDescs.do { |synthDesc|
 					var sentBy, bytes, doSend, sourceCode;
 					synthDesc.metadata !? { 
 						sentBy = synthDesc.metadata.at(\sentBy);
@@ -195,28 +214,52 @@ Republic : SimpleRepublic {
 								or: { addrs.at(sentBy).isNil } // has left
 							};
 					if(doSend) {
-						this.sendSynthDefBytes(who, synthDesc.name, bytes, sourceCode);
-						0.1.rand.wait; // distribute load
+						this.sendSynthDefBytes(who, synthDesc.name, bytes, sourceCode, false);
+						1.0.rand.wait; // distribute load
 					}
 			}
 		}
 	}
 	
-	sendSynthDef { | who, synthDef |
+	sendSynthDef { | who, synthDef, toServer = true |
 		this.sendSynthDefBytes(who, synthDef.name, 
-				synthDef.asBytes, synthDef.asCompileString);
+				synthDef.asBytes, synthDef.asCompileString, toServer);
 		if(verbose) { "Republic (%): sent synthdef % to %\n".postf(nickname, synthDef.name, who) };
 	}
 	
-	sendSynthDefBytes { | who, defName, bytes, sourceCode |
+	sendSynthDefBytes { | who, defName, bytes, sourceCode, toServer = true |
 		this.send(who, synthDefSendCmd, nickname, defName, sourceCode, bytes);
-		this.sendServer(who, "/d_recv", bytes);
+		if (toServer) { this.sendServer(who, "/d_recv", bytes) };
 	}
 
 	synthDescs {
 		^SynthDescLib.global.synthDescs.select { |desc| 
 			desc.metadata.notNil and: { desc.metadata[\sentBy].notNil } 
 		}
+	}
+	
+	informServer { |fromSourceCode = false| 
+		var synthdecs = this.synthDescs;
+		"informing r.server % of % synthdefs.".format(this.myServer, synthdecs.size).postln;
+			// interpret is unsafe
+		if (fromSourceCode) { 
+			synthdecs.do { |desc| 
+				desc.metadata[\sourceCode].interpret.add;
+			};
+			^this;
+		};
+			// using bytes should be safe.
+		synthdecs.do { |desc|
+			var whereFrom = desc.metadata[\sentBy];
+			var bytes = desc.metadata[\bytes];
+			if (bytes.notNil) { 
+				this.sendServer(whereFrom, "/d_recv", bytes);
+			} { 
+				warn("//// Republic:informServer - no bytes in metaData for %."
+					" Maybe do: \ntt r.informServer(true);".format(desc.name));
+				
+			};
+		};
 	}
 	
 	storeRemoteSynthDef { | sentBy, name, sourceCode, bytes |
@@ -232,11 +275,12 @@ Republic : SimpleRepublic {
 		// add the origin and SynthDef data to the metadata field
 		synthDesc.metadata = (sentBy: sentBy, bytes: bytes, sourceCode: sourceCode);
 		
-		// post a prototype event:	
-		dict.at(name).controls.do { |ctl| 
-			args = args.add(ctl.name.asSymbol).add((ctl.defaultValue ? 0.0).round(0.00001))
-		};
-		"// SynthDef \"%\" added:\n".postf(name);
+//		// post a prototype event:	
+//		dict.at(name).controls.do { |ctl| 
+//			args = args.add(ctl.name.asSymbol).add((ctl.defaultValue ? 0.0).round(0.00001))
+//		};
+
+		"\n// SynthDef \"%\" added:".postf(name);
 		if(postSource) {
 			sourceCode = format("%.share", sourceCode);
 			if(sourceCode.find("\n").notNil) { sourceCode = format("(\n%\n);", sourceCode) };
@@ -324,17 +368,20 @@ RepublicServer {
 	}
 
 	sendBundle { |time ... msgs|
+	//	"sendBundle".postln;
 		republic.sendServerBundle(time, this.findWhere(msgs[0]), *msgs);
 	}
 	
 	sendMsg { |... msg|
+	//	"sendMsg".postln;
 		republic.sendServerBundle(nil, this.findWhere(msg), msg);
 	}
 	
 	findWhere { |msg|
 		var indexWhere, where;
+	//	"findWhere - msg and index are : ".postln; msg.postcs;
 		indexWhere = msg.indexOf(\where); // indexOf is very fast in arrays
-		^indexWhere !? { msg[indexWhere + 1] };
+		^(indexWhere !? { msg[indexWhere + 1] }); // .postln; 
 	}
 	
 	nextNodeID { |where|

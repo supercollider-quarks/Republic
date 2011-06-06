@@ -30,19 +30,41 @@ SimpleRepublic {
 		this.makeSkip; 
 	}
 	
-	
-	join { |name|
+	canJoin {  |name|
 		name = name.asSymbol;
-		if (this.nameIsFree(name)) {
+
+		if (this.hasJoined(name)) { 
+			if (name == nickname) { 
+				inform("Republic - you have joined already as %.".format(name));
+			} { 
+				warn("Republic - could not join: name % is in use.".format(name));
+			};
+			^false;
+		};
+		^true
+	}
+	
+	joinStart { 
+		this.statusFunc;
+		skip.play;
+		fork { 0.5.wait; this.checkJoined }
+	}
+		
+		// clientID for subclass...
+	join { |name, argClientID|
+		name = name.asSymbol;
+		if (this.canJoin(name)) { 
+	
+				// leave quickly when rejoining under different name
+			if (nickname.notNil) { this.leave; };
 			nickname = name;
-			this.statusFunc;
-			skip.play;
-			fork { 0.5.wait; this.checkJoined }
+			
+			this.joinStart;
 		}
 	}
 	
-	
 	leave { |free = false| 
+		this.removeParticipant(nickname);
 		nickname = nil;
 		joined = false;
 		if (free) { this.free }
@@ -65,19 +87,10 @@ SimpleRepublic {
 	
 	// testing
 	
-	nameIsFree { |name| 
-		var nameIsUsed = addrs.keys.includes(name); 
-		if (nameIsUsed) { 
-			if (name == nickname) { 
-				inform("Republic  %: You have already joined as %.\n"
-					.format(republicName, nickname));
-			} { 
-				inform("Republic %: nickname % is already in use!\n".format(name));
-			}
-		};
-		^nameIsUsed.not
-	}
-	
+	nameIsFree { |name| ^this.hasJoined(name) }
+
+	hasJoined { |name| ^addrs.at(name).notNil }
+		
 	checkJoined { 
 		joined = addrs.keys.includes(nickname); 
 		if (joined.not) { 
@@ -142,9 +155,7 @@ SimpleRepublic {
 		};
 		"\n\nRepublic: switched global NetAddr broadcast flag to %.\n".format(flag).postln;
 	}
-	
-	hasJoined { |name| ^addrs.at(name).notNil }
-	
+		
 	makeResponder {
 		resp = OSCresponderNode(nil, republicName, 
 			{ |t,r,	msg, replyAddr|
@@ -155,8 +166,7 @@ SimpleRepublic {
 				otherID = msg[2];
 				extraData = msg[3..];
 												
-						
-				if(this.hasJoined(otherNick).not) {
+				if(this.hasJoined(otherNick).not) { 
 					addr = NetAddr(replyAddr.addr.asIPString, replyAddr.port);
 					this.addParticipant(otherNick, addr, otherID, extraData);
 					(" ---> % has joined the Republic. ---".format(otherNick)).postln;
@@ -189,8 +199,9 @@ SimpleRepublic {
 	
 	// GUI
 	
-	gui { |parent, bounds|
-		^EZRepublicGui(parent, bounds, this);
+	gui { |numItems = 12, parent, bounds|
+	//	^EZRepublicGui(parent, bounds, this);
+		^RepublicGui(this, numItems, parent, bounds);
 	}
 	
 	shareHistory { |useShout = true, winWhere| 
@@ -236,14 +247,26 @@ SimpleRepublic {
 	// otherwise send to each of the given names
 	
 	prSendWithDict { |dict, names, messages, latency|
-		names = names ? nickname; // send to myself if none is given
+		var isServer = dict.choose.isKindOf(Server); 
+	//	if (isServer) { "incoming names: ".post; names.postcs; };
+		names = names ? nickname; // send to myself if none is given 
+		
+	//	if (isServer) {"replaced names: ".post; names.postcs;};
+		
+		
 		if(verbose) { "sent messages to: %.\nmessages: %\nlatency: %\n"
 				.postf(names, messages, latency)};
 		if(names == \all) {
+	//	if (isServer) {"sending to all.".postln;};
+			
+			dict.postcs;
 			dict.do { |recv| recv.sendBundle(latency, *messages) }
 		} {
-			names.asArray.do { |name|
-				var recv = dict.at(name);
+	//	if (isServer) { "names.asArray: ".post; };
+			
+			
+			names.asArray/*.postcs*/.do { |name|
+				var recv = dict.at(name).postcs;
 				if(recv.isNil) { 
 					"% is currently absent.\n".postf(name)
 				} {

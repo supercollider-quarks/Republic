@@ -83,10 +83,10 @@ EZRepublicGui {
 		var names = republic.addrs.keys.asArray.sort;
 		var idString = "", showNames; 
 		var width; 
-		if (republic.respondsTo(\allIDs)) { 
+		if (republic.respondsTo(\allClientIDs)) { 
 			idString = republic.clientID ? idString;
 			showNames = names.collect { |key| 
-				key ++ " : " ++ republic.allIDs[key]
+				key ++ " : " ++ republic.allClientIDs[key]
 			};
 		} { showNames = names };
 		
