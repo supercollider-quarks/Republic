@@ -259,14 +259,14 @@ SimpleRepublic {
 		if(names == \all) {
 	//	if (isServer) {"sending to all.".postln;};
 			
-			dict.postcs;
+	//		dict.postcs;
 			dict.do { |recv| recv.sendBundle(latency, *messages) }
 		} {
 	//	if (isServer) { "names.asArray: ".post; };
 			
 			
 			names.asArray/*.postcs*/.do { |name|
-				var recv = dict.at(name).postcs;
+				var recv = dict.at(name);
 				if(recv.isNil) { 
 					"% is currently absent.\n".postf(name)
 				} {

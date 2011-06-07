@@ -22,7 +22,7 @@ RepublicGui :JITGui {
 		} { 
 			defPos = skin.margin;
 		};
-		minSize = 230 @ (numItems * skin.buttonHeight + 300);
+		minSize = 230 @ (numItems * skin.buttonHeight + 40 + 300);
 	}
 	
 	accepts { |obj| ^obj.isKindOf(Republic) or: obj.isNil }
@@ -44,12 +44,10 @@ RepublicGui :JITGui {
 		heights = zone.bounds.height - [0, 200]; 
 		prevState.put(\object, -999); 
 		
-		countView = StaticText(zone, 140@20).string_("0 citizens, 0 synthdefs")
+		countView = StaticText(zone, 230@20).string_("0 citizens, 0 synthdefs")
+			.font_(Font("Helvetica", 16))
 			.align_(\center);	
 
-		sendBut = Button(zone, Rect(0,0, 90, 20))
-			.states_([["inform server"]])
-			.action_({ |b| try { object.informServer } });
 
 		Button(zone, Rect(0,0, 80, 20))
 			.states_([["history"]])
@@ -59,9 +57,45 @@ RepublicGui :JITGui {
 			.states_([["chat on"], ["chat off"]])
 			.action_({ |b| this.switchSize(b.value.asInteger) });
 
-		Button(zone, Rect(0,0, 90, 20))
-			.states_([["post examples"]])
+
+		sendBut = Button(zone, Rect(0,0, 90, 20))
+			.states_([["inform server"]])
+			.action_({ |b| try { object.informServer } });
+
+		Button(zone, Rect(0,0, 140, 20))
+			.states_([["post example events"]])
 			.action_({ |b| try { object.postExamples } });
+
+		Button(zone, Rect(0,0, 90, 20))
+			.states_([["post synthdefs"]])
+			.action_({ |b| try { object.postSynthDefs } });
+
+
+		Button(zone, Rect(0,0, 90, 20))
+			.states_([["show servers"]])
+			.action_({ |b| try { 
+				object.servers.do(_.makeWindow); 
+			} });
+
+		Button(zone, Rect(0,0, 70, 20))
+			.states_([["stop sound", Color.white, Color.red]])
+			.action_({ |b, mod| 
+				if (mod.isAlt) { 
+					try { object.myServer.freeAll(true) }
+				} {
+					"hold alt-key then click!".postln;
+				}
+			});
+
+		Button(zone, Rect(0,0, 70, 20))
+			.states_([["stop ALL", Color.white, Color.red]])
+			.action_({ |b, mod| 
+				if (mod.isAlt) { 
+					try { object.servers.do(_.freeAll(true)) }
+				} {
+					"hold alt-key then click!".postln;
+				}
+			});
 
 
 

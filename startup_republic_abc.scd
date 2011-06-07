@@ -1,15 +1,18 @@
 (
 
-Task {	 
-	"Republic - startup file for 'abc'.".postln; 
+Task {
+	var myname = 'abc'; 
+	"\n\n *** Republic - startup file for %.\n".postf(myname); 
 	
-	r = Republic.new.makeDefault;
+	r = Republic.default ?? { Republic.new.makeDefault };
 	z = RepublicGui(r); // add a display if you like.
 	z.switchSize(1);	// hide chat area
 	r.shareHistory; 
 	AllGui.new;		// global overview
 	PdefAllGui(12);
 	TdefAllGui(12);
+	
+	Server.all.do { |sv| try { sv.window.close } };
 
 			// server setup - reserve busses for shared audio and control signals
 	r.options
@@ -19,7 +22,7 @@ Task {
 		.numReservedAudioBuses_(16); 		// for combined playing
 	
 			// joining creates the server as well
-	r.join(\abc);
+	r.join(myname);
 
 		// wait until server is there
 	0.5.wait; 
@@ -38,13 +41,20 @@ Task {
 // 	"~/whatever/folder/allMyRepublicSynthDefs.scd".load; 
 	
 		// and probably open a file with some starting events, patterns, etc:
-	
 	Document.open(
 		Republic.filenameSymbol.asString.dirname.dirname 
 		+/+ "republic_basicpatterns.scd"
 	);
-
-	"Republic - startup file for 'abc' loaded fine.".postln; 
+	
+		// customize post window
+	Document.listener
+		.bounds_(Rect(450, 2, 600, 200))
+		.background_(Color.blue(0.2))
+		.stringColor_(Color.yellow);
+	Document.postColor_(Color.yellow);
+		
+		
+	"\n*** Republic - startup file for % loaded fine.\n\n\n".postf(myname); 
 	
 }.play(AppClock);
 );

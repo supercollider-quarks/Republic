@@ -1,4 +1,42 @@
+/* ToDo:
 
+** myServer should know it is local, so freeAll works from CmdPeriod.
+	dont know how the weird case below happened with two servers adc,
+	one local one not. 
+	
+** big freeAll for emergencies
+
+r.shutupAll;	// 
+
+** r.servers.do(_freeAll(true));
+	
+** ask all others for their synthdefs; 
+	send an message that listens for 'shareSynthDefs';
+
+** maybe a popup menu for all the server commands?
+	request synthdefs
+	post examples
+	inform server
+	show all servers
+	stop my sounds
+	stop all sounds
+
+AllGui: 
+** look for existing window first and show that .front; else build new window.
+** a small all servers view? 
+
+
+	// really obscure: managed to get into a state 
+	// where there are TWO servers called adc;
+	// and s is different from r.myServer. BAD! 
+	
+s == r.myServer; 	// should be true!
+
+{ SinOsc.ar * 0.1 }.play;
+
+thisProcess.cmdPeriod	// should stop sinosc.
+
+*/
 
 Republic : SimpleRepublic {
 	
@@ -32,6 +70,11 @@ Republic : SimpleRepublic {
 	
 	join { | name, argClientID, argServerPort |
 
+		if (name.isNil) { 
+			warn("Republic:join - name was nil! Please pick a name when you join.");
+			^this
+		};
+		
 		name = name.asSymbol;
 		argClientID = argClientID ?? { this.nextFreeID }; 
 		
@@ -232,6 +275,9 @@ Republic : SimpleRepublic {
 		if (toServer) { this.sendServer(who, "/d_recv", bytes) };
 	}
 
+		// maybe these should be cached locally
+		// the gui asks for them often, and incoming 
+		// synthdefs could just go here directly.
 	synthDescs {
 		^SynthDescLib.global.synthDescs.select { |desc| 
 			desc.metadata.notNil and: { desc.metadata[\sentBy].notNil } 
@@ -239,20 +285,26 @@ Republic : SimpleRepublic {
 	}
 	
 	informServer { |fromSourceCode = false| 
-		var synthdecs = this.synthDescs;
-		"informing r.server % of % synthdefs.".format(this.myServer, synthdecs.size).postln;
+		var synthdescs = this.synthDescs;
+		"informing r.server % of % synthdefs.".format(this.myServer, synthdescs.size).postln;
 			// interpret is unsafe
 		if (fromSourceCode) { 
-			synthdecs.do { |desc| 
+			"interpreting synthdefs: ".post;
+			synthdescs.do { |desc| 
+				(desc.name.asCompileString ++ " ").post;
 				desc.metadata[\sourceCode].interpret.add;
-			};
+			};		
+			"\n".postln; 
+			
 			^this;
 		};
+			"sending bytes of: ".post; 
 			// using bytes should be safe.
-		synthdecs.do { |desc|
+		synthdescs.do { |desc|
 			var whereFrom = desc.metadata[\sentBy];
 			var bytes = desc.metadata[\bytes];
 			if (bytes.notNil) { 
+				(desc.name.asCompileString ++ " ").post;
 				this.sendServer(whereFrom, "/d_recv", bytes);
 			} { 
 				warn("//// Republic:informServer - no bytes in metaData for %."
@@ -260,6 +312,7 @@ Republic : SimpleRepublic {
 				
 			};
 		};
+		"\n".postln; 
 	}
 	
 	storeRemoteSynthDef { | sentBy, name, sourceCode, bytes |

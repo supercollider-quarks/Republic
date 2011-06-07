@@ -32,8 +32,18 @@
 
 + Republic { 
 	
-	postExamples { |newDoc = true| 
+	postSynthDefs { |newDoc = true| 
 		var title = "// REPUBLIC - all shared synthdefs";
+		var allStr = title ++ "\n\n";
+
+		var synthdefStrings = this.synthDescs.asArray.sort({ |a, b| a.name < b.name })
+			.collect { |desc| ("(\n" ++ desc.metadata.sourceCode ++ ".share;\n);") }; 		
+		if (newDoc) { Document(title, allStr ++ synthdefStrings.join("\n")) };
+		allStr.postln;
+	}
+	
+	postExamples { |newDoc = true| 
+		var title = "// REPUBLIC - example events for all shared synthdefs";
 		var allStr = title ++ "\n\n";
 
 		var eventStrings = this.synthDescs.asArray.sort({ |a, b| a.name < b.name })
