@@ -87,7 +87,7 @@ SimpleRepublic {
 	
 	// testing
 	
-	nameIsFree { |name| ^this.hasJoined(name) }
+	nameIsFree { |name| ^this.hasJoined(name).not }
 
 	hasJoined { |name| ^addrs.at(name).notNil }
 		
