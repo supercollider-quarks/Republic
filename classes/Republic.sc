@@ -1,40 +1,14 @@
-/* ToDo:
+/* Problems / todo : 
 
-** myServer should know it is local, so freeAll works from CmdPeriod.
-	dont know how the weird case below happened with two servers adc,
-	one local one not. 
-	
-** big freeAll for emergencies
+** sometimes myServer does not stop on Cmd.period, 
+	maybe it appears not local by accident?
+	// test: 
 
-r.shutupAll;	// 
+{ SinOsc.ar * 0.1 }.play(r.myServer);
+thisProcess.stop;	// should stop sinosc.
 
-** r.servers.do(_freeAll(true));
-	
-** ask all others for their synthdefs; 
-	send an message that listens for 'shareSynthDefs';
-
-** maybe a popup menu for all the server commands?
-	request synthdefs
-	post examples
-	inform server
-	show all servers
-	stop my sounds
-	stop all sounds
-
-AllGui: 
-** look for existing window first and show that .front; else build new window.
-** a small all servers view? 
-
-
-	// really obscure: managed to get into a state 
-	// where there are TWO servers called adc;
-	// and s is different from r.myServer. BAD! 
-	
-s == r.myServer; 	// should be true!
-
-{ SinOsc.ar * 0.1 }.play;
-
-thisProcess.cmdPeriod	// should stop sinosc.
+** r.requestSynthDefs - ask all others for their synthdefs; 
+	do it in r.statusData ? 
 
 */
 
@@ -76,6 +50,14 @@ Republic : SimpleRepublic {
 		};
 		
 		name = name.asSymbol;
+
+		if (allClientIDs.includes(argClientID)) {
+			warn("clientID % is already in use."
+				.format(argClientID)
+			);
+			argClientID = nil; 
+		};
+
 		argClientID = argClientID ?? { this.nextFreeID }; 
 		
 		if (this.canJoin(name, argClientID)) {
@@ -237,12 +219,11 @@ Republic : SimpleRepublic {
 		^res
 	}
 	
-	// sharing synth defs
-	// should better happen only after the new server is really booted. later. 
-	
+		// sharing synth defs - should be called after a new server is up.
+		
 	shareSynthDefs { | who |
 		fork {
-			rrand(0.0, 1.0).wait; // wait for the other server to boot
+			rrand(0.0, 1.0).wait; 		// wait to distribute network traffic
 			this.synthDescs.do { |synthDesc|
 					var sentBy, bytes, doSend, sourceCode;
 					synthDesc.metadata !? { 
@@ -305,7 +286,7 @@ Republic : SimpleRepublic {
 			var bytes = desc.metadata[\bytes];
 			if (bytes.notNil) { 
 				(desc.name.asCompileString ++ " ").post;
-				this.sendServer(whereFrom, "/d_recv", bytes);
+				this.myServer.sendMsg("/d_recv", bytes);
 			} { 
 				warn("//// Republic:informServer - no bytes in metaData for %."
 					" Maybe do: \ntt r.informServer(true);".format(desc.name));

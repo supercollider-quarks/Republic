@@ -42,63 +42,70 @@ RepublicGui :JITGui {
 		var width = zone.bounds.width; 
 		
 		heights = zone.bounds.height - [0, 200]; 
-		prevState.put(\object, -999); 
+		prevState.put(\object, -999); // so first time nil updates
 		
 		countView = StaticText(zone, 230@20).string_("0 citizens, 0 synthdefs")
 			.font_(Font("Helvetica", 16))
 			.align_(\center);	
 
-
-		Button(zone, Rect(0,0, 80, 20))
+		Button(zone, Rect(0,0, 114, 20))
 			.states_([["history"]])
 			.action_({ |b| try { object.shareHistory } });
 
-		Button(zone, Rect(0,0, 60, 20))
+		Button(zone, Rect(0,0, 114, 20))
 			.states_([["chat on"], ["chat off"]])
 			.action_({ |b| this.switchSize(b.value.asInteger) });
 
+		StaticText(zone, 57@20).string_("server(s):")
+			.align_(\center);	
 
-		sendBut = Button(zone, Rect(0,0, 90, 20))
-			.states_([["inform server"]])
+		Button(zone, Rect(0,0, 57, 20))
+			.states_([["show"]])
+			.action_({ |b| 
+				try { object.servers.do(_.makeWindow); } 
+			});
+
+
+		sendBut = Button(zone, Rect(0,0, 57, 20))
+			.states_([["inform"]])
 			.action_({ |b| try { object.informServer } });
 
-		Button(zone, Rect(0,0, 140, 20))
-			.states_([["post example events"]])
-			.action_({ |b| try { object.postExamples } });
+		Button(zone, Rect(0,0, 57, 20))
+			.states_([["STOP", Color.white, Color.red(0.8)]])
+			.action_({ |b, mod| 
+				if (mod.isAlt) { 
+					"PANIC - stopping all servers!\n".postln;
+					try { object.servers.do(_.freeAll(true)) };
+				} {
+					try { object.myserver.freeAll(true) };
+					"PANIC - stopping myServer.\n"
+					"click with alt-key to stop all servers.\n".postln;
+				}
+			});
+	
 
-		Button(zone, Rect(0,0, 90, 20))
-			.states_([["post synthdefs"]])
+		StaticText(zone, 57@20).string_("synthdefs:")
+			.align_(\center);	
+
+
+		Button(zone, Rect(0,0, 43, 20))
+			.states_([["ask"]])
+			.action_({ |b| 
+				"//!! Please send synthdefs: ... \n\n\n\n"
+				"// Not implemented yet: \nRepublic.requestSynthDefs;".newTextWindow;
+			});
+
+		Button(zone, Rect(0,0, 43, 20))
+			.states_([["show"]])
 			.action_({ |b| try { object.postSynthDefs } });
 
+		Button(zone, Rect(0,0, 43, 20))
+			.states_([["share"]])
+			.action_({ |b| try { object.shareSynthDefs; } });
 
-		Button(zone, Rect(0,0, 90, 20))
-			.states_([["show servers"]])
-			.action_({ |b| try { 
-				object.servers.do(_.makeWindow); 
-			} });
-
-		Button(zone, Rect(0,0, 70, 20))
-			.states_([["stop sound", Color.white, Color.red]])
-			.action_({ |b, mod| 
-				if (mod.isAlt) { 
-					try { object.myServer.freeAll(true) }
-				} {
-					"hold alt-key then click!".postln;
-				}
-			});
-
-		Button(zone, Rect(0,0, 70, 20))
-			.states_([["stop ALL", Color.white, Color.red]])
-			.action_({ |b, mod| 
-				if (mod.isAlt) { 
-					try { object.servers.do(_.freeAll(true)) }
-				} {
-					"hold alt-key then click!".postln;
-				}
-			});
-
-
-
+		Button(zone, Rect(0,0, 43, 20))
+			.states_([["events"]])
+			.action_({ |b| try { object.postExamples } });
 
 		zone.decorator.shift(0, 5);
 
