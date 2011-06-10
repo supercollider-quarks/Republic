@@ -266,8 +266,12 @@ SimpleRepublic {
 			
 			
 			names.asArray/*.postcs*/.do { |name|
-				var recv = dict.at(name);
-				if(recv.isNil) { 
+				var recv;
+				if(name.isInteger) {
+					name = nameList.wrapAt(name);
+				};
+				recv = dict.at(name);
+				if(recv.isNil) {
 					"% is currently absent.\n".postf(name)
 				} {
 					recv.sendBundle(latency, *messages)
