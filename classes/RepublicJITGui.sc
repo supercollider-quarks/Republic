@@ -88,23 +88,34 @@ RepublicGui :JITGui {
 			.align_(\center);	
 
 
-		Button(zone, Rect(0,0, 43, 20))
-			.states_([["ASK"]])
+		Button(zone, Rect(0,0, 57, 20))
+			.states_([["request"]])
 			.action_({ |b| 
 				try { object.requestSynthDefs };
 			});
 
-		Button(zone, Rect(0,0, 43, 20))
+		Button(zone, Rect(0,0, 57, 20))
 			.states_([["show"]])
 			.action_({ |b| try { object.postSynthDefs } });
 
-		Button(zone, Rect(0,0, 43, 20))
+		Button(zone, Rect(0,0, 57, 20))
 			.states_([["share"]])
 			.action_({ |b| try { object.shareSynthDefs; } });
 
-		Button(zone, Rect(0,0, 43, 20))
+
+		StaticText(zone, 57@20).string_("examples:")
+			.align_(\center);	
+		Button(zone, Rect(0,0, 57, 20))
 			.states_([["events"]])
-			.action_({ |b| try { object.postExamples } });
+			.action_({ |b| try { object.postEvents } });
+
+		Button(zone, Rect(0,0, 57, 20))
+			.states_([["Pdefs"]])
+			.action_({ |b| try { object.postPdefs } });
+
+		Button(zone, Rect(0,0, 57, 20))
+			.states_([["Tdefs"]])
+			.action_({ |b| try { object.postTdefs } });
 
 		zone.decorator.shift(0, 5);
 

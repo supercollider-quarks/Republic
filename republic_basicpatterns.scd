@@ -1,5 +1,4 @@
-	// play a pattern that goes around all members
-
+	// share a synthdef
 (
 SynthDef(\xxx, {|out, zzf = 440, sustain = 1, mod = 0.5, amp = 0.1, pan|
 	var env = Line.kr(1, 0, sustain, doneAction: 2);
@@ -15,13 +14,18 @@ SynthDef(\xxx, {|out, zzf = 440, sustain = 1, mod = 0.5, amp = 0.1, pan|
 }).share;
 )
 
+	// post all synthdefs, snd examples for events and patterns that use it
+r.postSynthDefs;	
+r.postEvents;
+r.postPdefs;
 
-r.postExamples;
+
+	// play a pattern that goes around all members
 
 (
 Pdef(\x,
 	Pbind(
-		\instrument, \xxy,
+		\instrument, [\xxy],
 		\server, r.s,
 		\where, Prand(r.nameList, 8), // 
 		\dur, 1,
@@ -39,45 +43,65 @@ r.nameList;
 	// play an event with that synthdef on your computer: 
 (server: r.myServer, instrument: \xxy, freq: exprand(300, 1000)).play;
 
+
 	// send a synth to everyone:
 (server: r.s, where: \all, instrument: \xxy, freq: exprand(300, 1000)).play;
 
-// or to a random member:
+	// or choose random member:
 (server: r.servers.choose, instrument: \xxy, freq: exprand(300, 1000)).play;
 
-// or to a specific member (replace \XXX with someone's nickname)
+	// or to a specific member (replace \XXX with someone's nickname)
 (server: r.s, instrument: \xxy, where: \XXX, freq: exprand(300, 1000)).play;
 
-	// or to a random subset of members
-r.nameList.scramble.keep(2).postln;
-(server: r.s, where: r.nameList.scramble.keep(2).postln, instrument: \xxy, freq: exprand(300, 1000)).play;
+	// or to a subset of the members
+(server: r.s, where: [\hh, \jk], instrument: \xxy, freq: [400, 1600]).play;
+	
+	// by an index - same as r.nameList.wrapAt(index)
+(server: r.s, where: 1, instrument: \xxy, freq: [400, 1600]).play;
+
+	// by a list of indices - same as r.nameList.wrapAt(indices)
+(server: r.s, where: [1, 4], instrument: \xxy, freq: [400, 1600]).play;
 
 
 
 	// test if pattern works here:
 	
-	(
-	Pdef(\x, 
-		Pbind(
-			\instrument, \xxx,
-			\server, r.servers[r.nickname],
-			\zzf, Pseq([8700, 800, 720], inf),
-			\mod, Pwhite(0.1, 0.7, inf),
-			\dur, Prand([0.3, 0.5, Pn(0.04, 5)], inf)
-		)
-	).play
+(
+Pdef(\x, 
+	Pbind(
+		\instrument, \xxx,
+		\server, r.servers[r.nickname],
+		\zzf, Pseq([8700, 800, 720], inf),
+		\mod, Pwhite(0.1, 0.7, inf),
+		\dur, Prand([0.3, 0.5, Pn(0.04, 5)], inf)
 	)
-	
-	// send synth messages to random participants:
-	
-	(
-	Pdef(\x, 
-		Pbind(
-			\instrument, \xxx,
-			\server, Pfunc { r.servers.choose } .trace,
-			\zzf, Pseq([8700, 800, 720], inf),
-			\mod, Pwhite(0.1, 0.7, inf),
-			\dur, Prand([0.3, 0.5, Pn(0.04, 5)], inf)
-		)
-	).play
+).play
+)
+
+// send synth messages to random participants:
+
+(
+Pdef(\x, 
+	Pbind(
+		\instrument, \xxx,
+		\server, r.s,
+		\where, r.nameList.scramble.keep(3), 
+		\zzf, Pseq([8700, 800, 720], inf) * [ 1, 1.5, 2.5],
+		\strum, 0.03, 
+		\mod, Pwhite(0.1, 0.7, inf),
+		\dur, Prand([0.3, 0.5, Pn(0.04, 5)], inf)
 	)
+).play
+)
+
+(
+Pdef(\x, 
+	Pbind(
+		\instrument, \xxx,
+		\server, Pfunc { r.servers.choose } .trace,
+		\zzf, Pseq([8700, 800, 720], inf),
+		\mod, Pwhite(0.1, 0.7, inf),
+		\dur, Prand([0.3, 0.5, Pn(0.04, 5)], inf)
+	)
+).play
+)
