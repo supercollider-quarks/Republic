@@ -269,7 +269,7 @@ SimpleRepublic {
 			names.asArray/*.postcs*/.do { |name|
 				var recv;
 				if(name.isInteger) {
-					name = nameList.wrapAt(name);
+					name = nameList.wrapAt(name + myNameIndex);
 				};
 				recv = dict.at(name);
 				if(recv.isNil) {
