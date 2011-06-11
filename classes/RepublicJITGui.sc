@@ -22,7 +22,7 @@ RepublicGui :JITGui {
 		} { 
 			defPos = skin.margin;
 		};
-		minSize = 230 @ (numItems * skin.buttonHeight + 40 + 300);
+		minSize = 230 @ (numItems * skin.buttonHeight + 40 + 350);
 	}
 	
 	accepts { |obj| ^obj.isKindOf(Republic) or: obj.isNil }
