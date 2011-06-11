@@ -6,7 +6,7 @@ RepublicGui :JITGui {
 	var <nicknameView, <idView, <privateBtn, 
 	<countView, <sendBut, <listDrag, 
 	<strengthViews, <listView, 
-	<chatViewWrite, <chatView, 
+	<chatViewWrite, <chatView, shoutView,
 	<synthdefView;
 	var resp, heights;
 
@@ -89,10 +89,9 @@ RepublicGui :JITGui {
 
 
 		Button(zone, Rect(0,0, 43, 20))
-			.states_([["ask"]])
+			.states_([["ASK"]])
 			.action_({ |b| 
-				"//!! Please send synthdefs: ... \n\n\n\n"
-				"// Not implemented yet: \nRepublic.requestSynthDefs;".newTextWindow;
+				try { object.requestSynthDefs };
 			});
 
 		Button(zone, Rect(0,0, 43, 20))
@@ -149,7 +148,25 @@ RepublicGui :JITGui {
 		
 		zone.decorator.shift(0, 5);
 		
-		chatViewWrite = TextView(zone, Rect(0, 0, width - 4, 24)).resize_(8);
+		
+		
+		shoutView = SCTextView(zone, Rect(0, 0, width - 4, 24))
+			.resize_(8).font_(Font("Helvetica", 14))
+			.string_("shout here - tab to send")
+			.usesTabToFocusNextView_(false) 
+			.enterInterpretsSelection_(false)
+			.background_(Color.black)
+			.stringColor_(Color.white)
+			.keyDownAction_ { |view, char| 
+				if (char === Char.tab) { 
+					Shout(view.string);
+				};
+			};
+
+		zone.decorator.shift(0, 5);
+			
+		chatViewWrite = TextView(zone, Rect(0, 0, width - 4, 24)).resize_(8)
+			.string_("chat here - tab to send");
 
 		zone.decorator.shift(0, 5);
 		chatView = TextView(zone, Rect(0, 0, width - 4, 170)).resize_(8);

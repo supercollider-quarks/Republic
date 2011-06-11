@@ -20,6 +20,7 @@ Republic : SimpleRepublic {
 	var <servers, <>latency;
 	var <republicServer, <clientID, <>options;
 	var <synthDefResp, synthDefSendCmd;
+	var <requestResp;
 	var <allClientIDs;
 	var <>onJoinServerAction;
 	
@@ -73,7 +74,8 @@ Republic : SimpleRepublic {
 	
 	leave { |free = false| 
 		
-		synthDefResp.remove;
+		synthDefResp.remove; 
+		requestResp.remove;
 		servers.do { |sharedServer| sharedServer.freeAll };
 		try { servers.at(nickname).quit };
 		servers.keysValuesDo(this.removeServer(_));
@@ -135,6 +137,7 @@ Republic : SimpleRepublic {
 		super.removeParticipant(key);
 		allClientIDs.removeAt(key);
 		this.removeServer(key); 
+		republicServer.updateNames;
 	}
 		
 	addServer { | name, addr, port, config |
@@ -147,6 +150,7 @@ Republic : SimpleRepublic {
 		// this only happens when we keep several republics with the same name locally
 		if(server.isNil or: isLocalAndInRepublic) { 
 			server = this.makeNewServer(name, addr, port, config);
+			republicServer.updateNames;
 		} {
 			this.displayServer(server);
 			"\nRepublic (%): server % already there - fine.\n".postf(nickname, name);
@@ -168,7 +172,7 @@ Republic : SimpleRepublic {
 	displayServer { |server|
 		defer { try { server.makeGui } };	
 	}
-	
+		
 	makeNewServer { | name, addr, port, config |
 			
 			var newServer, serverOptions;
@@ -325,13 +329,14 @@ Republic : SimpleRepublic {
 	
 	manipulateSynthDesc { | name |
 		var synthDesc = SynthDescLib.at(name);
-		var ctl = synthDesc.controlNames;
+		var ctls = synthDesc.controlNames;
 		// this is done to guarantee that the "where" parameter is collected from the event
 		synthDesc !? {
-			if(ctl.isNil or: { synthDesc.controlNames.includes("where").not }) {
+			if(ctls.isNil or: { synthDesc.controlNames.includes("where").not }) {
 				synthDesc.controlNames = synthDesc.controlNames.add("where");
 				synthDesc.controls = synthDesc.controls.add(
-					ControlName().name_("where").defaultValue_(nickname);				);
+					ControlName().name_("where").rate_('scalar').defaultValue_(nickname);
+				);
 				synthDesc.makeMsgFunc; // make msgFunc again
 			};
 		}
@@ -352,7 +357,7 @@ Republic : SimpleRepublic {
 		^this.myServer
 	}
 
-	initEventSystem {
+	initEventSystem { 
 		synthDefResp = OSCresponderNode(nil, synthDefSendCmd, { | t, r, msg |
 				
 				var sentBy = msg[1];
@@ -362,13 +367,24 @@ Republic : SimpleRepublic {
 
 				this.storeRemoteSynthDef(sentBy, name, sourceCode, bytes)
 			}).add;
-			
+		
+		requestResp = OSCresponderNode(nil, \request, { | t, r, msg |
+			var sentBy = msg[1];
+			msg.postcs;
+			if (msg[2] == \shareSynthDefs) { 
+				this.shareSynthDefs(sentBy);
+			};	
+		}).add;
+		
 			// this is only an interface to the event system
 			republicServer = RepublicServer(this, clientID); 
 	}
 
 	hasJoined { |name| ^servers.at(name).notNil }
 
+	requestSynthDefs { 
+		addrs.do(_.sendMsg(\request, nickname, \shareSynthDefs));
+	}
 	
 /*	
 	assemble {
@@ -392,6 +408,7 @@ Republic : SimpleRepublic {
 RepublicServer {
 	var <republic, <clientID;
 	var <nodeAllocator, <audioBusAllocator, <controlBusAllocator, <bufferAllocator;
+	var <nameList, <myIndexInNameList = -1;
 	
 	*new { |republic, clientID|
 		^super.newCopyArgs(republic, clientID).init
@@ -399,25 +416,54 @@ RepublicServer {
 	
 	init {
 		this.newAllocators;
+		nameList = [];
 	}
 
 	sendBundle { |time ... msgs|
 	//	"sendBundle".postln;
-		republic.sendServerBundle(time, this.findWhere(msgs[0]), *msgs);
+		// possible optimize: if all wheres are the same, send them as one bundle
+		var serverNames = msgs.collect (this.findWhere(_));
+		
+			// multichan expand, e.g. to spread chords across servers
+		serverNames.do { |servname, i| 
+			republic.sendServerBundle(time, servname, msgs[i]);
+		}
 	}
 	
 	sendMsg { |... msg|
 	//	"sendMsg".postln;
 		republic.sendServerBundle(nil, this.findWhere(msg), msg);
 	}
-	
+		// orig findWhere - single name and \all only
+//	findWhere { |msg|
+//		var indexWhere, where;
+//	//	"findWhere - msg and index are : ".postln; msg.postcs;
+//		indexWhere = msg.indexOf(\where); // indexOf is very fast in arrays
+//		^(indexWhere !? { msg[indexWhere + 1] }); // .postln; 
+//	}
+		// supports numbers in namelist as well.
 	findWhere { |msg|
 		var indexWhere, where;
 	//	"findWhere - msg and index are : ".postln; msg.postcs;
-		indexWhere = msg.indexOf(\where); // indexOf is very fast in arrays
-		^(indexWhere !? { msg[indexWhere + 1] }); // .postln; 
+		indexWhere = msg.indexOf(\where); 
+		if (indexWhere.isNil) {
+			^nil
+		};
+		
+		where = msg[indexWhere + 1];
+		if (where.notNil) { 
+			if (where.isNumber) { 
+				where = nameList.wrapAt(myIndexInNameList + where);
+			};
+		};
+		^where
 	}
-	
+
+	updateNames { 
+		nameList = republic.nameList; 
+		myIndexInNameList = nameList.indexOf(republic.nickname);
+	}
+
 	nextNodeID { |where|
 		 ^nodeAllocator.value.alloc
 		// ^-1

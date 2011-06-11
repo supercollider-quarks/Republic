@@ -8,9 +8,10 @@ Task {
 	z = RepublicGui(r); // add a display if you like.
 	z.switchSize(1);	// hide chat area
 	r.shareHistory; 
-	AllGui.new;		// global overview
+	
+	AllGui.new.moveTo(310, 0);		// global overview
 	PdefAllGui(12);
-	TdefAllGui(12);
+	TdefAllGui(12).moveTo(540, 600);
 	
 	Server.all.do { |sv| try { sv.window.close } };
 
@@ -25,11 +26,18 @@ Task {
 	r.join(myname);
 
 		// wait until server is there
-	0.5.wait; 
+	2.0.wait; 
+			
+	fork ({ 3.wait; 
+		try { 
+				// make it the default server for easier testing
+			Server.default = s = r.myServer;
+			s.makeWindow.window.bounds_(Rect(315, 280, 288, 98)); 
+		};
+	}, AppClock);
 		
-		// make it the default server for easier testing
-	Server.default = r.myServer;
-	
+		
+			
 		// share a synthdef for testing
 	SynthDef(\xxy, {|out, sustain = 1, freq = 440|
 		var env = Line.kr(0.1, 0, sustain, doneAction: 2);
