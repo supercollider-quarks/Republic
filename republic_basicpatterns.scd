@@ -11,7 +11,7 @@ SynthDef(\xxx, {|out, zzf = 440, sustain = 1, mod = 0.5, amp = 0.1, pan|
 			),
 		pan, env * amp
 	))
-}).share;
+}).add;
 )
 
 	// post all synthdefs, snd examples for events and patterns that use it
@@ -44,24 +44,27 @@ r.nameList;
 (server: r.myServer, instrument: \xxy, freq: exprand(300, 1000)).play;
 
 
+	// or choose random member:
+(server: r.servers.choose, instrument: \xxy, freq: exprand(300, 1000)).play;
+
+
+	//	using where: // 
+	
 	// send a synth to everyone:
 (server: r.s, where: \all, instrument: \xxy, freq: exprand(300, 1000)).play;
 
-	// or choose random member:
-(server: r.servers.choose, instrument: \xxy, freq: exprand(300, 1000)).play;
 
 	// or to a specific member (replace \XXX with someone's nickname)
 (server: r.s, instrument: \xxy, where: \XXX, freq: exprand(300, 1000)).play;
 
 	// or to a subset of the members
-(server: r.s, where: [\hh, \jk], instrument: \xxy, freq: [400, 1600]).play;
+(server: r.s, where: [\jrhbr, \adc], instrument: \xxy, freq: [400, 1600]).play;
 	
 	// by an index - same as r.nameList.wrapAt(index)
 (server: r.s, where: 1, instrument: \xxy, freq: [400, 1600]).play;
 
 	// by a list of indices - same as r.nameList.wrapAt(indices)
-(server: r.s, where: [1, 4], instrument: \xxy, freq: [400, 1600]).play;
-
+(server: r.s, where: [1, 2], instrument: \xxy, freq: [400, 1600]).play;
 
 
 	// test if pattern works here:

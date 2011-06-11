@@ -2,7 +2,7 @@
 SimpleRepublic {
 	
 	var <broadcastAddr, <republicName;
-	var <addrs, <nickname, <nameList, <joined = false;
+	var <addrs, <nickname, <nameList, <myNameIndex = -1, <joined = false;
 	var <graceCount = 16;
 	var <>verbose = false, <>private = false; // use this later to delegate traffic
 	var <skip, <resp, <broadcastWasOn, <presence;
@@ -137,12 +137,14 @@ SimpleRepublic {
 		addrs.put(key, addr);
 		if(nameList.includes(key).not) {
 			nameList.add(key);
+			myNameIndex = nameList.indexOf(nickname);
 		};
 	}
 	
 	removeParticipant { |key|
 		addrs.removeAt(key);
 		nameList.remove(key);
+		myNameIndex = nameList.indexOf(nickname);
 		presence.removeAt(key);
 	}
 	
@@ -247,8 +249,8 @@ SimpleRepublic {
 	// otherwise send to each of the given names
 	
 	prSendWithDict { |dict, names, messages, latency|
-		var isServer = dict.choose.isKindOf(Server); 
-	//	if (isServer) { "incoming names: ".post; names.postcs; };
+	//	var isServer = dict.choose.isKindOf(Server); 
+	//	if (isServer) { "prSendWithDict, server - incoming names: ".post; names.postcs; };
 		names = names ? nickname; // send to myself if none is given 
 		
 	//	if (isServer) {"replaced names: ".post; names.postcs;};
@@ -259,11 +261,10 @@ SimpleRepublic {
 		if(names == \all) {
 	//	if (isServer) {"sending to all.".postln;};
 			
-	//		dict.postcs;
+			dict.postcs;
 			dict.do { |recv| recv.sendBundle(latency, *messages) }
 		} {
 	//	if (isServer) { "names.asArray: ".post; };
-			
 			
 			names.asArray/*.postcs*/.do { |name|
 				var recv;

@@ -137,7 +137,6 @@ Republic : SimpleRepublic {
 		super.removeParticipant(key);
 		allClientIDs.removeAt(key);
 		this.removeServer(key); 
-		republicServer.updateNames;
 	}
 		
 	addServer { | name, addr, port, config |
@@ -150,7 +149,6 @@ Republic : SimpleRepublic {
 		// this only happens when we keep several republics with the same name locally
 		if(server.isNil or: isLocalAndInRepublic) { 
 			server = this.makeNewServer(name, addr, port, config);
-			republicServer.updateNames;
 		} {
 			this.displayServer(server);
 			"\nRepublic (%): server % already there - fine.\n".postf(nickname, name);
@@ -335,7 +333,9 @@ Republic : SimpleRepublic {
 			if(ctls.isNil or: { synthDesc.controlNames.includes("where").not }) {
 				synthDesc.controlNames = synthDesc.controlNames.add("where");
 				synthDesc.controls = synthDesc.controls.add(
-					ControlName().name_("where").rate_('scalar').defaultValue_(nickname);
+					ControlName().name_("where")
+						.index_(synthDesc.controls.size)
+						.rate_('scalar').defaultValue_(0);
 				);
 				synthDesc.makeMsgFunc; // make msgFunc again
 			};
@@ -408,7 +408,6 @@ Republic : SimpleRepublic {
 RepublicServer {
 	var <republic, <clientID;
 	var <nodeAllocator, <audioBusAllocator, <controlBusAllocator, <bufferAllocator;
-	var <nameList, <myIndexInNameList = -1;
 	
 	*new { |republic, clientID|
 		^super.newCopyArgs(republic, clientID).init
@@ -416,7 +415,6 @@ RepublicServer {
 	
 	init {
 		this.newAllocators;
-		nameList = [];
 	}
 
 	sendBundle { |time ... msgs|
@@ -434,13 +432,6 @@ RepublicServer {
 	//	"sendMsg".postln;
 		republic.sendServerBundle(nil, this.findWhere(msg), msg);
 	}
-		// orig findWhere - single name and \all only
-//	findWhere { |msg|
-//		var indexWhere, where;
-//	//	"findWhere - msg and index are : ".postln; msg.postcs;
-//		indexWhere = msg.indexOf(\where); // indexOf is very fast in arrays
-//		^(indexWhere !? { msg[indexWhere + 1] }); // .postln; 
-//	}
 		// supports numbers in namelist as well.
 	findWhere { |msg|
 		var indexWhere, where;
@@ -451,17 +442,7 @@ RepublicServer {
 		};
 		
 		where = msg[indexWhere + 1];
-		if (where.notNil) { 
-			if (where.isNumber) { 
-				where = nameList.wrapAt(myIndexInNameList + where);
-			};
-		};
 		^where
-	}
-
-	updateNames { 
-		nameList = republic.nameList; 
-		myIndexInNameList = nameList.indexOf(republic.nickname);
 	}
 
 	nextNodeID { |where|
@@ -496,7 +477,8 @@ RepublicServer {
 	share { | republic |
 		republic = republic ? Republic.default;
 		if(republic.isNil) {
-			if(Main.versionAtMost(3, 3)) { this.memStore } { this.add }
+				////////////////////////////////////////////////// v
+			if(Main.versionAtMost(3, 3)) { this.memStore } { this.prAdd }
 		} {
 			republic.addSynthDef(this)
 		}
@@ -514,7 +496,18 @@ RepublicServer {
 		}
 		
 	}*/
-
+	
+	add { this.share; }
+	
+		// temp hack
+	prAdd { arg libname = \global, completionMsg, keepDef = true;
+		var	lib, desc = this.asSynthDesc(libname, keepDef);
+		libname ?? { libname = \global };
+		lib = SynthDescLib.getLib(libname);
+		lib.servers.do { |each|
+			each.value.sendMsg("/d_recv", this.asBytes, completionMsg.value(each))
+		};
+	}
 }
 
 

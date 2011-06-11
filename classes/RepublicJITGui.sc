@@ -107,7 +107,7 @@ RepublicGui :JITGui {
 			.align_(\center);	
 		Button(zone, Rect(0,0, 57, 20))
 			.states_([["events"]])
-			.action_({ |b| try { object.postEvents } });
+			.action_({ |b| try { object.postEvents(true, false) } });
 
 		Button(zone, Rect(0,0, 57, 20))
 			.states_([["Pdefs"]])

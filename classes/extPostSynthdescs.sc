@@ -19,18 +19,20 @@
 				nextVal = nextVal.add(ctl.defaultValue.round(0.0001));
 		//	};
 		};
+		namesVals = namesVals.add(nextName.asSymbol).add(nextVal.unbubble);
 		
 		^namesVals
 	}
 	
 	// build a postable string example event for a synthdesc 
-	exampleEventString { |excludeNames = #[\out, \where], linePerPair = true| 
+	exampleEventString { |excludeNames = #[\out], linePerPair = true, numIndents = 0| 
 		var nl = if (linePerPair, "\n", "");
+		var indents = if (numIndents == 0) { "" } { "\t".dup(numIndents).join };
 		var space = if (linePerPair, "\t", " ");
-		var str = "( instrument: %" .format(name.asCompileString); /*)*/ // for bracket matching
+		var str = "( %instrument: %" .format(indents, name.asCompileString); /*)*/ // bracket matching
 		
 		this.defaultNamesVals.pairsDo { |parname, val|
-			str = str ++ (",%%%: %".format(nl, space, parname.asCompileString, val.unbubble));
+			str = str ++ (",%%%%: %".format(indents, nl, space, parname.asCompileString, val.unbubble));
 		};
 		
 		/*(*/ // for bracket matching
@@ -74,7 +76,7 @@
 		var allStr = title ++ "\n\n";
 
 		var eventStrings = this.synthDescs.asArray.sort({ |a, b| a.name < b.name })
-			.collect (_.exampleEventString(linePerPair));
+			.collect (_.exampleEventString(linePerPair: linePerPair, numIndents: 1));
 		if (newDoc) { Document(title, allStr ++ eventStrings.join("\n")) };
 		allStr.postln;
 	}
@@ -87,6 +89,23 @@
 			.collect (_.examplePdefString); 		
 		if (newDoc) { Document(title, allStr ++ eventStrings.join("\n")) };
 		allStr.postln;
+	}
+
+	postTdefs { |newDoc = true| 
+		var title = "// REPUBLIC - example Tdefs for all shared synthdefs";
+		var allStr = title ++ "\n\n";
+		
+		var eventStrings = this.synthDescs.asArray.sort({ |a, b| a.name < b.name })
+			.collect (_.exampleEventString(linePerPair: true, numIndents: 1)); 	
+		eventStrings.do { |evStr|
+			allStr = allStr 
+			++ "(\nTdef(\\" ++ { rrand(97, 122).asAscii }.dup(5).join ++ ",{ \n"
+			++ evStr
+			++ "}).play;\n);\n"
+		};
+		
+		if (newDoc) { Document(title, allStr) };
+		// allStr.postln;
 	}
 
 }

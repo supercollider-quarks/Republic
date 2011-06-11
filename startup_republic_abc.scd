@@ -12,7 +12,16 @@ Task {
 	AllGui.new.moveTo(310, 0);		// global overview
 	PdefAllGui(12);
 	TdefAllGui(12).moveTo(540, 600);
+
+		// customize post window
+	Document.listener
+		.bounds_(Rect(450, 2, 600, 200))
+		.background_(Color.blue(0.2))
+		.stringColor_(Color.yellow);
+	Document.postColor_(Color.yellow);
 	
+		// exclusivity!
+//	Server.killAll;	
 	Server.all.do { |sv| try { sv.window.close } };
 
 			// server setup - reserve busses for shared audio and control signals
@@ -22,6 +31,7 @@ Task {
 		.numReservedControlBuses_(32) 	// for shared control busses
 		.numReservedAudioBuses_(16); 		// for combined playing
 	
+	1.0.wait;
 			// joining creates the server as well
 	r.join(myname);
 
@@ -53,14 +63,7 @@ Task {
 		Republic.filenameSymbol.asString.dirname.dirname 
 		+/+ "republic_basicpatterns.scd"
 	);
-	
-		// customize post window
-	Document.listener
-		.bounds_(Rect(450, 2, 600, 200))
-		.background_(Color.blue(0.2))
-		.stringColor_(Color.yellow);
-	Document.postColor_(Color.yellow);
-		
+			
 		
 	"\n*** Republic - startup file for % loaded fine.\n\n\n".postf(myname); 
 	
