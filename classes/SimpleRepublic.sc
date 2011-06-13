@@ -261,7 +261,7 @@ SimpleRepublic {
 		if(names == \all) {
 	//	if (isServer) {"sending to all.".postln;};
 			
-			dict.postcs;
+	//		dict.postcs;
 			dict.do { |recv| recv.sendBundle(latency, *messages) }
 		} {
 	//	if (isServer) { "names.asArray: ".post; };

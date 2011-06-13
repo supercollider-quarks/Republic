@@ -1,5 +1,5 @@
 /*
-use tab to send chat message
+use tab to send shout or chat messages
 */
 
 RepublicGui :JITGui {
@@ -48,13 +48,26 @@ RepublicGui :JITGui {
 			.font_(Font("Helvetica", 16))
 			.align_(\center);	
 
-		Button(zone, Rect(0,0, 114, 20))
-			.states_([["history"]])
-			.action_({ |b| try { object.shareHistory } });
 
-		Button(zone, Rect(0,0, 114, 20))
-			.states_([["chat on"], ["chat off"]])
-			.action_({ |b| this.switchSize(b.value.asInteger) });
+
+		StaticText(zone, 57@20).string_("show:")
+			.align_(\center);	
+
+		Button(zone, Rect(0,0, 57, 20))
+			.states_([["history"],["history", Color.black, skin.onColor]])
+			.action_({ |b| try { object.shareHistory } })
+			.value_(1);
+
+		Button(zone, Rect(0,0, 57, 20))
+			.states_([["chat"], ["chat", Color.black, skin.onColor]])
+			.action_({ |b| this.switchSize(b.value.asInteger) })
+			.value_(1);
+
+		Button(zone, Rect(0,0, 57, 20))
+			.states_([["clock"], ["clock", Color.black, skin.onColor]])
+			.action_({ |b| "Telepathic Clock - not used yet.".postln });
+
+
 
 		StaticText(zone, 57@20).string_("server(s):")
 			.align_(\center);	
@@ -161,23 +174,24 @@ RepublicGui :JITGui {
 		
 		
 		
-		shoutView = SCTextView(zone, Rect(0, 0, width - 4, 24))
+		shoutView = TextView(zone, Rect(0, 0, width - 4, 24))
 			.resize_(8).font_(Font("Helvetica", 14))
-			.string_("shout here - tab to send")
+			.string_("shout here - use tab to send")
 			.usesTabToFocusNextView_(false) 
 			.enterInterpretsSelection_(false)
 			.background_(Color.black)
 			.stringColor_(Color.white)
 			.keyDownAction_ { |view, char| 
 				if (char === Char.tab) { 
-					Shout(view.string);
+					
+					History.forwardFunc.value("//!!" + view.string);
 				};
 			};
 
 		zone.decorator.shift(0, 5);
 			
 		chatViewWrite = TextView(zone, Rect(0, 0, width - 4, 24)).resize_(8)
-			.string_("chat here - tab to send");
+			.string_("chat here - use tab to send");
 
 		zone.decorator.shift(0, 5);
 		chatView = TextView(zone, Rect(0, 0, width - 4, 170)).resize_(8);

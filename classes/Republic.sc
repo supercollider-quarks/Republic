@@ -10,6 +10,11 @@ thisProcess.stop;	// should stop sinosc.
 ** r.requestSynthDefs - ask all others for their synthdefs; 
 	do it in r.statusData ? 
 
+** decouple server a little more 
+	- even if it does not boot, do everything else; 
+	when it has booted, inform the server from the lang.
+
+hasJoined
 */
 
 Republic : SimpleRepublic {
@@ -380,7 +385,7 @@ Republic : SimpleRepublic {
 			republicServer = RepublicServer(this, clientID); 
 	}
 
-	hasJoined { |name| ^servers.at(name).notNil }
+//	hasJoined { |name| ^servers.at(name).notNil }
 
 	requestSynthDefs { 
 		addrs.do(_.sendMsg(\request, nickname, \shareSynthDefs));
@@ -407,7 +412,8 @@ Republic : SimpleRepublic {
 
 RepublicServer {
 	var <republic, <clientID;
-	var <nodeAllocator, <audioBusAllocator, <controlBusAllocator, <bufferAllocator;
+	var nodeAllocator, audioBusAllocator, controlBusAllocator, bufferAllocator;
+	var <>verbose = false;
 	
 	*new { |republic, clientID|
 		^super.newCopyArgs(republic, clientID).init
@@ -444,7 +450,12 @@ RepublicServer {
 		where = msg[indexWhere + 1];
 		^where
 	}
-
+	
+	nodeAllocator { ^nodeAllocator.value }
+	audioBusAllocator { ^audioBusAllocator.value }
+	controlBusAllocator { ^controlBusAllocator.value }
+	bufferAllocator { ^bufferAllocator.value }
+	
 	nextNodeID { |where|
 		 ^nodeAllocator.value.alloc
 		// ^-1
@@ -465,8 +476,21 @@ RepublicServer {
 	// this needs some work, other allocators..
 	newAllocators {
 		nodeAllocator = { republic.myServer.nodeAllocator };
+		audioBusAllocator = { republic.myServer.audioBusAllocator };
+		controlBusAllocator = { republic.myServer.controlBusAllocator };
+		
 	}
 
+	doesNotUnderstand { |selector, args|
+		if (verbose) { 
+			"RepublicServer forwards message '%' with args % to myServer.\n".postf(selector, args);
+		};
+		if (args.isNil) { 
+			^republic.myServer.perform(selector);
+		} { 
+			^republic.myServer.perform(selector, args);
+		};
+	}
 	
 }
 
@@ -506,6 +530,38 @@ RepublicServer {
 		lib = SynthDescLib.getLib(libname);
 		lib.servers.do { |each|
 			each.value.sendMsg("/d_recv", this.asBytes, completionMsg.value(each))
+		};
+	}
+
+	store { this.prStore.share; }
+	
+		// temp hack
+	prStore { arg libname=\global, dir(synthDefDir), completionMsg, mdPlugin;
+		var lib = SynthDescLib.getLib(libname);
+		var file, path = dir ++ name ++ ".scsyndef";
+		if(metadata.falseAt(\shouldNotSend)) {
+			protect {
+				var bytes, desc;
+				file = File(path, "w");
+				bytes = this.asBytes;
+				file.putAll(bytes);
+				file.close;
+				lib.read(path);
+				lib.servers.do { arg server;
+					server.value.sendMsg("/d_recv", bytes, completionMsg)
+				};
+				desc = lib[this.name.asSymbol];
+				desc.metadata = metadata;
+				SynthDesc.populateMetadataFunc.value(desc);
+				desc.writeMetadata(path);
+			} {
+				file.close
+			}
+		} {
+			lib.read(path);
+			lib.servers.do { arg server;
+				this.loadReconstructed(server, completionMsg);
+			};
 		};
 	}
 }
