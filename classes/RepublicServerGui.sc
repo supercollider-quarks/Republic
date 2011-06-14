@@ -3,14 +3,23 @@
 	ToDo: 
 	rewrite Server:makeGui as ServerGui : JITGui 
 	(then this could become ServerAllGui)
-		
+	
+	
+	r.addParticipant(\carlo, s.addr, otherClientID: r.nextFreeID);
+	r.addParticipant(\otto, s.addr, otherClientID: r.nextFreeID);
+	r.servers
+	z = RepublicServerGui(r);
+	z.object = r;
+	z.lines
 */
+
 
 RepublicServerGui : JITGui { 
 	var <homeZone, <lines; 
-//	*new { |object, numItems, parent, bounds| 
-//		
-//	}
+	
+	*new { |object, numItems = 6, parent, bounds, makeSkip = true, options = #[]| 
+		^super.new(object, numItems, parent, bounds, makeSkip)
+	}
 	
 		// these methods should be overridden in subclasses:
 	setDefaults { |options|
@@ -21,6 +30,8 @@ RepublicServerGui : JITGui {
 		};
 		minSize = 300 @ (numItems + 1 * skin.buttonHeight + 4 + 120);
 	}
+	
+	getName { ^try { object.name } ? "Republic" }
 
 	accepts { |obj| ^obj.isNil ?? obj.isKindOf(Republic) }
 	
@@ -29,8 +40,13 @@ RepublicServerGui : JITGui {
 		if (obj.isNil) {
 			homeZone.children.do(_.remove);
 		} { 
-			obj.myServer.makeGui(homeZone);
-		}
+			if (obj != object) { 
+				homeZone.children.do(_.remove);
+				try { obj.myServer.window.close };
+				obj.myServer.makeGui(homeZone);
+			};
+		};
+		object = obj;
 	}
 	
 	getState { 
@@ -41,8 +57,8 @@ RepublicServerGui : JITGui {
 			(
 				name: 		sv.name, 
 				running: 		sv.serverRunning, 
-				avgCPU: 		sv.avgCPU.round(0.1),
-				peakCPU: 		sv.peakCPU.round(0.1),
+				avgCPU: 		try { sv.avgCPU.round(0.1) },
+				peakCPU: 		try { sv.peakCPU.round(0.1) },
 				numUGens: 	sv.numUGens,
 				numSynths: 	sv.numSynths,
 				numGroups: 	sv.numGroups,
@@ -76,25 +92,28 @@ RepublicServerGui : JITGui {
 			);
 			lineZone;
 		};
-		
-	//	object.myServer.makeGui(parent); 
 	}
+	
 	checkUpdate { 
 		var newState = this.getState;
-		lines.do { |l, i| 
-			var svstate = newState[i];
+		"newState: %\n".postf(newState); 
+		
+		lines.postln.do { |l, i| 
+			var svstate = newState[i].postcs;
 			var str; 
+			"svstate: %\n".postf(svstate); 
+			
 			l.visible_(svstate.notNil);
 			if (svstate.notNil) { 
 				l.children.first.value_(svstate[\running].binaryValue);
 				str = " " 
-				+ svstate.numSynthDefs 	++ "    "
-				+ svstate.numGroups	++ "    "
-				+ svstate.numSynths	++ "     "
-				+ svstate.avgCPU		++ "   "
-				+ svstate.peakCPU;
+				+ (svstate.numSynthDefs ? "??") 	++ "    "
+				+ (svstate.numGroups ? "??")	++ "    "
+				+ (svstate.numSynths ? "??")	++ "     "
+				+ (svstate.avgCPU ? "??")		++ "   "
+				+ (svstate.peakCPU ? "??");
 				
-				l.children[1].string_(str);
+				l.children[i].string_(str.postln);
 			};
 		}
 	}
