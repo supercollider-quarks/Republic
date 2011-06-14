@@ -45,7 +45,6 @@ span.s16 {color: #102ac3}
 span.s17 {color: #008225}
 span.s18 {color: #cd1713}
 span.s19 {color: #008325}
-span.s20 {color: #008323}
 span.Apple-tab-span {white-space:pre}
 </style>
 </head>
@@ -82,7 +81,7 @@ span.Apple-tab-span {white-space:pre}
 <p class="p7">How to add a SynthDef<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><a href="../moredoc/AddingASynthDef.scd"><span class="s6">AddingASynthDef</span></a></p>
 <p class="p7">Mouse movement sonification virus<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><a href="../moredoc/AnotherSynth_randMouse.scd"><span class="s6">AnotherSynth_randMouse</span></a></p>
 <p class="p7">Defining groups of players for sound distribution <span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><a href="../moredoc/UsingPlayerGroups.scd"><span class="s7">UsingPlayerGroups</span></a></p>
-<p class="p7">The long version of SynthDefs for events and patterns<span class="Apple-tab-span">	</span><a href="../moredoc/HowSynthDefsWork.scd"><span class="s6">HowSynthDefsWork</span></a></p>
+<p class="p6"><br></p>
 <p class="p6"><br></p>
 <p class="p6"><br></p>
 <p class="p6"><br></p>
@@ -280,20 +279,5 @@ span.Apple-tab-span {white-space:pre}
 <p class="p16"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// free all resources</p>
 <p class="p15"><span class="Apple-tab-span">	</span>r.free;<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></p>
 <p class="p4"><br></p>
-<p class="p4"><br></p>
-<p class="p1">To Do:<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-tab-span">	</span>// where does not expand for server arrays,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-tab-span">	</span>// only single names, or \all.<span class="Apple-converted-space"> </span></p>
-<p class="p1">(instrument: <span class="s20">\grain</span>, server: r.s, where: <span class="s20">\abc</span>).play;<span class="Apple-tab-span">	</span>// ok</p>
-<p class="p1">(instrument: <span class="s20">\grain</span>, server: r.s, where: <span class="s20">\all</span>).play;<span class="Apple-tab-span">	</span>// ok</p>
-<p class="p1">(instrument: <span class="s20">\grain</span>, server: r.s, where: [<span class="s20">\abc</span>, <span class="s20">\def</span>]).play;<span class="Apple-tab-span">	</span>// just plays \abc</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-tab-span">	</span>// I think this is because asOSCArgArray flattens the where array,</p>
-<p class="p1"><span class="Apple-tab-span">	</span>// or it happens in the Event jungle somewhere.<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-tab-span">	</span>// it comes into RepublicServer:sendBundle with just a single \where arg,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-tab-span">	</span>// see commented-out debug posts in RepublicServer:findWhere,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-tab-span">	</span>// in SimpleRepublic:prSendWithDict.</p>
-<p class="p2"><br></p>
-<p class="p2"><br></p>
 </body>
 </html>

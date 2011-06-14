@@ -11,7 +11,7 @@
 	 // More details: see SimpleRepublic and Republic helpfiles
 
 
-	
+
 	 //________________________Step 1 - INSTALLING ___________________________
 	// is it installed already?
 	
@@ -25,11 +25,13 @@ if(\Republic.asClass.notNil) { "Republic installed already!" } { "please install
 unixCmd("open" + quote(Platform.userExtensionDir))
 
 
-		// recommended other Quarks to install:
+		// other Quarks recommended to install:
 (			// switching between different setups that are loeded on startup
 "Preference (switch startup)".include; 
 			// an overview of many global variables
 "AllGui".include;
+			// effects on the main outs, including filtering for bad numbers
+"SpeakersCorner".include;
 )
 
 		// now, recompile - from Lang Menu, or with this: 
@@ -42,8 +44,9 @@ if(\Republic.asClass.notNil) { "Republic installed!" } { "Please install Republi
 	
 	//________________________Step 2 - AGREE ON A COMMON NETWORK________________
 	// two options: 
-	// 2.1 Take an existing network or one person creates a local network, all the others join it.
-	// 2.2 Make sure: are you in the same network?
+	// 2.1 Take an existing network; or 
+	// 2.2 One person creates a local network, and all the others join it.
+	// 2.3 MAKE SURE: are you in the same network?
 	
 	
 	
@@ -89,6 +92,9 @@ r.join(\abc);		// <-- this is for a member called abc
 	// NOW save your personal copy of this file, 
 	// e.g. under the name Republic_install_<yourName>.scd.
 	
+	// OR you can adapt the example startup script:
+	
+"startup_republic_abc".openHelpFile;
 
 
 
@@ -160,53 +166,9 @@ r.leave;
 
 
 // you can save the republic setup as a startup file, 
-// which contains something like this: 
+// which contains something like this file: 
 
-// --- file: startup_republic_abc.scd --- // 
-(
-
-Task {	 
-	"Republic - startup file for 'abc'.".postln; 
-	
-	r = Republic.new.makeDefault;
-	z = RepublicGui(r); // add a display if you like.
-	z.switchSize(1);	// hide chat area
-	r.shareHistory; 
-	AllGui.new;		// global overview
-
-			// server setup - reserve busses for shared audio and control signals
-	r.options
-		.numInputBusChannels_(8)
-		.numOutputBusChannels_(8)
-		.numReservedControlBuses_(32) 	// for shared control busses
-		.numReservedAudioBuses_(16) 		// for combined playing
-	
-			// joining creates the server as well
-	r.join(\abc);
-
-		// wait until server is there
-	0.5.wait; 
-		
-		// make it the default server for easier testing
-	Server.default = r.myServer;
-	
-		// share a synthdef for testing
-	SynthDef(\xxy, {|out, sustain = 1, freq = 440|
-		var env = Line.kr(0.1, 0, sustain, doneAction: 2);
-		var son = SinOsc.ar(freq * [1, 1.2, 1.5, 1.7]).sum;
-		Out.ar(out, son * env);
-	}).share;
-
-		// shared synthdefs would typically be in one big file, and loaded with 
-// 	"~/whatever/folder/allMyRepublicSynthDefs.scd".load; 
-	
-		// and probably open a file with some starting events, patterns, etc:
-	Document.open("republic_basicpatterns.scd".resolveRelative); 
-
-	"Republic - startup file for 'abc' loaded fine.".postln; 
-	
-}.play(AppClock);
-);
+"startup_republic_abc".openHelpFile;
 
 // --- 
 
@@ -220,5 +182,4 @@ Blackboard.new.start;
 // esp. linux and windows
 
 Blackboard.new.useDocument_(false).start;
-
 

@@ -20,16 +20,17 @@ SynthDef(\kabelScahden, { |out, freq=50, sustain=1, amp = 1|
 (instrument: \kabelScahden, freq: [50, 50], sustain: 3).play;
 
 	// on a randomly chosen server
-(instrument: \kabelScahden, freq: [50, 75] * 3, sustain: 5, server: r.servers.choose).play;
+(instrument: \kabelScahden, freq: [50, 75] * 3, sustain: 5, where: r.nameList.choose).play;
 
 	// on a specific server - plays on mine if not there.
-(instrument: \kabelScahden, freq: [50, 50], sustain: 5, server: r.servers[\petra]).play;
+(instrument: \kabelScahden, freq: [50, 50], sustain: 5, where:  \petra).play;
+
+	// or use 'where' - also to play on all
+(instrument: \kabelScahden, freq: [50, 60] * 5, sustain: 4, amp: 2, where: \all).play;
 
 	// or use 'where' - maybe clearer, plays nowhere if server not present
-(instrument: \kabelScahden, freq: [50, 60] * 5, sustain: 4, amp: ,  server: r.s, where: \all).play;
+(instrument: \kabelScahden, freq: [50, 60] * 5, sustain: 4, amp: 2, where: [\abc, \def]).play;
 
-	// or use 'where' - maybe clearer, plays nowhere if server not present
-(instrument: \kabelScahden, freq: [50, 50] * 2, sustain: 10, server: r.s).play;
 
 
 	// mimic skype's new message sound
@@ -38,7 +39,7 @@ SynthDef(\kabelScahden, { |out, freq=50, sustain=1, amp = 1|
 	// different sound, different server
 (instrument: \grainXLine, freq: [800, 1250], strum: 0.08, sustain: 0.2, server: r.servers[\petra]).play
 
-	// with a new synth function, plyed on specific server directly.
+	// with a new synth function, played on specific server directly.
 { (BPF.ar(GrayNoise.ar, EnvGen.kr(Env([800, 1250, 1300], [0.1, 0.1] * 1.2, 4)), 0.02) 
 	* XLine.kr(10, 0.01, 0.4).min(4)).distort }.play(r.servers[\petra])
 

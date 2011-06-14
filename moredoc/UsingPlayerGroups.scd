@@ -1,6 +1,7 @@
 	// setup: named groups of names
 	// can also have overlaps
 (
+q = q ? ();
 q.groups = (
 	A: [\adc, \ce, \jt], 
 	B: [\do, \aw, \nm],
