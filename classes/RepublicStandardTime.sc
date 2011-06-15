@@ -101,7 +101,6 @@ RepublicStandardTime : ListeningClock {
 	}
 	
 	stopListen {
-		clocks.do(_.stopListen);
 		responder.remove	
 	}
 	
@@ -148,8 +147,7 @@ RepublicStandardTime : ListeningClock {
 	}
 	
 	removeClock { |key|
-		var clock = clocks.removeAt(key);
-		if(clock.notNil) { clock.stopListen };
+		clocks.removeAt(key);
 		this.update;	
 	}
 	
