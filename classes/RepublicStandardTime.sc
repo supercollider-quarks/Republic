@@ -135,7 +135,7 @@ RepublicStandardTime : ListeningClock {
 				this.addClock(key)
 			}	
 		};
-		others = listeningTo.collect { |name| clocks.at(name) };
+		others = listeningTo.collect { |name| clocks.at(name) }.select(_.notNil);
 		clocks.postln;
 	}
 	
