@@ -160,14 +160,14 @@ SimpleRepublic {
 		
 	makeResponder {
 		resp = OSCresponderNode(nil, republicName, 
-			{ |t,r,	msg, replyAddr|
+			{ |t, r, msg, replyAddr|
 				var otherNick, otherID, addr, extraData;
 				var tempo, beats, serverConfig;
 				
 				otherNick = msg[1];
 				otherID = msg[2];
 				extraData = msg[3..];
-												
+							
 				if(this.hasJoined(otherNick).not) { 
 					addr = NetAddr(replyAddr.addr.asIPString, replyAddr.port);
 					this.addParticipant(otherNick, addr, otherID, extraData);

@@ -67,7 +67,7 @@ Republic : SimpleRepublic {
 		};
 
 		argClientID = argClientID ?? { this.nextFreeID }; 
-		
+				
 		if (this.canJoin(name, argClientID)) {
 			if (this.hasJoined(nickname)) { this.leave };
 			nickname = name;
@@ -138,9 +138,10 @@ Republic : SimpleRepublic {
 			
 		if (clientID.notNil) { // I play with my own id on remote server
 			this.addServer(key, addr, serverPort, config);
+		} { 
+			warn("no clientID for participant %!\No server made yet.".format(key));
 		};
-		
-		// time.update;
+		\\ time.update;
 	}
 			
 	removeParticipant { | key |
@@ -399,7 +400,7 @@ Republic : SimpleRepublic {
 		addrs.do(_.sendMsg(\request, nickname, \shareSynthDefs));
 	}
 	
-/*	
+		// make servers whenever necessary
 	assemble {
 		super.assemble; 
 				// make servers if clientID was added, 
@@ -411,8 +412,6 @@ Republic : SimpleRepublic {
 			};
 		}
 	}
-*/
-
 }
 
 // this can be sneaked into events.
