@@ -141,7 +141,7 @@ Republic : SimpleRepublic {
 		} { 
 			warn("no clientID for participant %!\No server made yet.".format(key));
 		};
-		\\ time.update;
+		// time.update;
 	}
 			
 	removeParticipant { | key |
