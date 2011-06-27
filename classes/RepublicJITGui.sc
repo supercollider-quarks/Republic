@@ -2,7 +2,7 @@
 use tab to send shout or chat messages
 */
 
-RepublicGui :JITGui {
+RepublicGui : JITGui {
 	var <nicknameView, <idView, <privateBtn, 
 	<countView, <sendBut, <listDrag, 
 	<strengthViews, <listView, 
@@ -44,8 +44,8 @@ RepublicGui :JITGui {
 		heights = zone.bounds.height - [0, 200]; 
 		prevState.put(\object, -999); // so first time nil updates
 		
-		countView = StaticText(zone, 230@20).string_("0 citizens, 0 synthdefs")
-			.font_(Font("Helvetica", 16))
+		countView = StaticText(zone, 230@20).string_("0 citizens, 0 servers, 0 synthdefs")
+			.font_(Font("Helvetica", 14))
 			.align_(\center);	
 
 
@@ -231,7 +231,7 @@ RepublicGui :JITGui {
 			^(	name: "<name>", id: "", 
 				names: [], showNames: [],
 				presence: (), numSynthDefs: -1, 
-				private: false, numCitizens: 0
+				private: false, numCitizens: 0, numServers: 0
 			)
 		};
 
@@ -244,7 +244,8 @@ RepublicGui :JITGui {
 			presence: object.presence.copy, 
 			showNames: names.collect(_.asString),
 			private: object.private, 
-			numCitizens: object.presence.size
+			numCitizens: object.presence.size,
+			numServers: object.servers.size
 		);
 		
 		if (object.isKindOf(Republic)) { 
@@ -277,7 +278,7 @@ RepublicGui :JITGui {
 				privateBtn.value = 0; 
 				listView.items = [];
 				privateBtn.visible = false;
-				countView.string = "0 citizens, 0 synthdefs";
+				countView.string = "0 citizens, 0 servers, 0 synthdefs";
 				strengthViews.do { |v| v.bounds_(v.bounds.width_(0)) };
 				prevState = newState;
 				^this
@@ -291,8 +292,8 @@ RepublicGui :JITGui {
 
 		if (newState[\numSynthDefs] != prevState[\numSynthDefs] or: 
 			{ newState[\numCitizens] != prevState[\numCitizens]}) {
-			countView.string = "% citizens, % synthdefs"
-				.format(newState[\numCitizens], newState[\numSynthDefs]);
+			countView.string = "% citizens, % servers, % synthdefs"
+				.format(newState[\numCitizens], newState[\numServers], newState[\numSynthDefs]);
 		};
 					
 		if (newState[\nickname] != prevState[\nickname]) { 
