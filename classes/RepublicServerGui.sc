@@ -113,7 +113,7 @@ RepublicServerGui : JITGui {
 				+ (svstate.avgCPU ? "??")		++ "   "
 				+ (svstate.peakCPU ? "??");
 				
-				l.children[i].string_(str.postln);
+				l.children[1].string_(str);
 			};
 		}
 	}
