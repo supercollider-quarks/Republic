@@ -75,7 +75,8 @@ RepublicGui : JITGui {
 		Button(zone, Rect(0,0, 57, 20))
 			.states_([["show"]])
 			.action_({ |b| 
-				try { object.servers.do(_.makeWindow); } 
+				// try { object.servers.do(_.makeWindow); };
+				try { RepublicServerGui(this.object); };
 			});
 
 

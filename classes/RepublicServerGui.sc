@@ -9,7 +9,6 @@
 	r.addParticipant(\otto, s.addr, otherClientID: r.nextFreeID);
 	r.servers
 	z = RepublicServerGui(r);
-	z.object = r;
 	z.lines
 */
 
@@ -75,46 +74,48 @@ RepublicServerGui : JITGui {
 		StaticText(zone, Rect(0,0, 300, 20))
 			.font_(Font("Monaco", 9))
 			.string_(
-			"  name " " status" 
-			"  defs " " groups" " synths" "  peak " "  avg  " 
+			"name  status  defs groups synths ugens peak  avg" 
 		//	"  10.3 " "  8.8  " "   5   " "  3   " "  93"
 		);
 		
 		lines = numItems.collect { 
 			var lineZone = CompositeView(zone, Rect(0, 0,300, 24));
 			lineZone.addFlowLayout(2@2, 2@2);
-			Button(lineZone, Rect(0,0, 80,20))
+			Button(lineZone, Rect(0, 0, 76, 20))
 				.states_([[""],["", Color.black, skin.onColor]]);
-			StaticText(lineZone, Rect(0,0, 200, 20))
-				.font_(Font("Monaco", 9))
-				.string_(
-					"  93" "   3   " "   5   " "  10.3 " "  8.8  " 
-			);
+			6.do { 
+				StaticText(lineZone, Rect(0,0, 34, 20))
+					.font_(Font("Monaco", 9))
+					.align_(\center)
+					.string_("?");
+			};
 			lineZone;
 		};
 	}
 	
 	checkUpdate { 
 		var newState = this.getState;
-		"newState: %\n".postf(newState); 
 		
-		lines.postln.do { |l, i| 
-			var svstate = newState[i].postcs;
-			var str; 
-			"svstate: %\n".postf(svstate); 
+		lines.do { |l, i| 
+			var svstate = newState[i];
+			var str, svname; 
 			
 			l.visible_(svstate.notNil);
 			if (svstate.notNil) { 
-				l.children.first.value_(svstate[\running].binaryValue);
-				str = " " 
-				+ (svstate.numSynthDefs ? "??") 	++ "    "
-				+ (svstate.numGroups ? "??")	++ "    "
-				+ (svstate.numSynths ? "??")	++ "     "
-				+ (svstate.avgCPU ? "??")		++ "   "
-				+ (svstate.peakCPU ? "??");
-				
-				l.children[1].string_(str);
+				svname = svstate[\name].asString;
+				l.children.first
+					.value_(svstate[\running].binaryValue)
+					.states_([[svname], [svname, Color.black, skin.onColor]]);
+					
+				l.children[1].string = svstate.numSynthDefs ? "?";
+				l.children[2].string = svstate.numGroups ? "?";
+				l.children[3].string = svstate.numSynths ? "?";
+				l.children[4].string = svstate.numUGens ? "?";
+				l.children[5].string = svstate.peakCPU ? "?";
+				l.children[6].string = svstate.avgCPU ? "?";
 			};
 		}
 	}
+	
+	
 }
