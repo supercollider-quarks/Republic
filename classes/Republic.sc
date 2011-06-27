@@ -28,6 +28,7 @@ Republic : SimpleRepublic {
 	var <requestResp;
 	var <allClientIDs;
 	var <>onJoinServerAction;
+	// var <time;
 	
 	var <>usesRandIDs = true, <>usesSeparateState = true, <>postSource = true;
 	
@@ -37,6 +38,7 @@ Republic : SimpleRepublic {
 		allClientIDs = ();
 		synthDefSendCmd =  republicName.asString ++ "/synthDef";
 		options = this.defaultServerOptions;
+		// time = RepublicStandardTime(this).permanent_(true).phaseWrap_(4);
 	}
 	
 	canJoin { |name, argClientID|
@@ -72,7 +74,7 @@ Republic : SimpleRepublic {
 			clientID = argClientID;
 			serverPort = argServerPort ? serverPort;
 			this.initEventSystem;
-			
+			// time.startListen;
 			this.joinStart;			
 		}
 	}
@@ -87,6 +89,7 @@ Republic : SimpleRepublic {
 		
 		"servers: %\n".postf(servers);
 		clientID = nil;
+	//	time.stopListen;
 	//	servers = ();
 				
 		super.leave(free);	// keep lurking by default
@@ -132,17 +135,22 @@ Republic : SimpleRepublic {
 		
 		super.addParticipant(key, addr); 
 		allClientIDs.put(key, otherClientID);
-					
+			
 		if (clientID.notNil) { // I play with my own id on remote server
 			this.addServer(key, addr, serverPort, config);
-		}
+		};
+		
+		// time.update;
 	}
 			
 	removeParticipant { | key |
 		super.removeParticipant(key);
 		allClientIDs.removeAt(key);
-		this.removeServer(key); 
+		this.removeServer(key);
+		
+		// time.update;
 	}
+	
 		
 	addServer { | name, addr, port, config |
 		
