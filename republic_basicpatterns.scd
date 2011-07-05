@@ -11,7 +11,7 @@ SynthDef(\xxx, {|out, zzf = 440, sustain = 1, mod = 0.5, amp = 0.1, pan|
 			),
 		pan, env * amp
 	))
-}).add;
+}).share;
 )
 
 	// post all synthdefs, snd examples for events and patterns that use it
@@ -25,7 +25,7 @@ r.postPdefs;
 (
 Pdef(\x,
 	Pbind(
-		\instrument, [\xxy],
+		\instrument, \xxy,
 		\server, r.s,
 		\where, Prand(r.nameList, 8), // 
 		\dur, 1,
