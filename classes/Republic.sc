@@ -530,14 +530,25 @@ RepublicServer {
 	
 	add { this.share; }
 	
-		// temp hack
-	prAdd { arg libname = \global, completionMsg, keepDef = true;
-		var	lib, desc = this.asSynthDesc(libname, keepDef);
-		libname ?? { libname = \global };
-		lib = SynthDescLib.getLib(libname);
-		lib.servers.do { |each|
-			each.value.sendMsg("/d_recv", this.asBytes, completionMsg.value(each))
-		};
+		// temp hack, use try to keep backwards compatibility.
+	prAdd { arg libname, completionMsg, keepDef = true;
+		try {
+			var	servers;
+			this.asSynthDesc(libname ? \global, keepDef);
+			if(libname.isNil) { 
+				servers = Server.allRunningServers
+			} {
+				servers = SynthDescLib.getLib(libname).servers
+			};
+			this.sendOrLoad(servers, completionMsg);
+		} {
+			var	lib, desc = this.asSynthDesc(libname, keepDef);
+			libname ?? { libname = \global };
+			lib = SynthDescLib.getLib(libname);
+			lib.servers.do { |each|
+				each.value.sendMsg("/d_recv", this.asBytes, completionMsg.value(each))
+			};
+		}
 	}
 
 	store { this.prStore.share; }
