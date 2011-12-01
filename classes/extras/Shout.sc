@@ -3,14 +3,17 @@ Shout {
 	classvar <win, <txtView, <>tag="//!!";
 	classvar <>width=1250, <shouts, <codeDumpFunc; 
 	
+	classvar <>rect;
+	
 	*initClass { 
 		shouts = List.new; 
 		codeDumpFunc = { |str| if (str.beginsWith(Shout.tag)) { Shout(str.drop(Shout.tag.size)) } };
+		rect = Rect(0, 0, 1024, 80);
 	}
 
 	*makeWin { |message="Shout this!"| 
 	
-		win = GUI.window.new("Shout'er", Rect(20, 800, width, 80)).front;
+		win = GUI.window.new("Shout'er", rect).front;
 		win.alpha_(0.7);
 		win.view.background_(Color.clear);
 		win.alwaysOnTop_(true);

@@ -91,7 +91,7 @@ RepublicGui : JITGui {
 					"PANIC - stopping all servers!\n".postln;
 					try { object.servers.do(_.freeAll(true)) };
 				} {
-					try { object.myserver.freeAll(true) };
+					try { object.myServer.freeAll(true) };
 					"PANIC - stopping myServer.\n"
 					"click with alt-key to stop all servers.\n".postln;
 				}

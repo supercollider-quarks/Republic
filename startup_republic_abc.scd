@@ -1,11 +1,11 @@
 (
 
 Task {	 
-	var myname = 'adc'; 
+	var myname = 'abc'; 
 	"\n\n *** Republic - startup file for %.\n".postf(myname); 
 	
 	r = Republic.default ?? { Republic.new.makeDefault };
-	z = RepublicGui(r, 8); 
+	z = RepublicGui(r, 8); 	// 8 is number of participants
 	z.switchSize(1);	// hide chat area
 	try { z.moveTo(5, 600) }; // add a display if you like.
 	r.shareHistory; 
@@ -20,7 +20,9 @@ Task {
 		.background_(Color.blue(0.2))
 		.stringColor_(Color.yellow);
 	Document.postColor_(Color.yellow);
-		
+	
+	Shout.rect = Rect(10, 10, 1000, 80);	// use Shout positioning
+	
 		// use Republic exclusively!
 	Server.killAll;	
 	Server.all.do { |sv| try { sv.window.close } };
@@ -32,7 +34,9 @@ Task {
 		.numReservedControlBuses_(32) 	// for shared control busses
 		.numReservedAudioBuses_(16); 		// for combined playing
 	
-	1.0.wait;
+	3.5.wait;		// wait 3 rounds of registrations by all others;
+				// this avoids duplicate clientIDs on the servers.
+	
 			// joining creates the server as well
 	r.join(myname);
 
@@ -57,11 +61,13 @@ Task {
 		// shared synthdefs would typically be in one big file, and loaded with 
 // 	"~/whatever/folder/allMyRepublicSynthDefs.scd".load; 
 	
-		// and probably open a file with some starting events, patterns, etc:
-	Document.open(
-		Republic.filenameSymbol.asString.dirname.dirname 
-		+/+ "republic_basicpatterns.scd"
-	);
+	// put your own starting document here if you like:
+	
+//		// and probably open a file with some starting events, patterns, etc:
+//	Document.open(
+//		Republic.filenameSymbol.asString.dirname.dirname 
+//		+/+ "republic_basicpatterns.scd"
+//	);
 			
 	"\n*** Republic - startup file for % loaded fine.\n\n\n".postf(myname); 
 	
