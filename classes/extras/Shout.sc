@@ -13,14 +13,17 @@ Shout {
 
 	*makeWin { |message="Shout this!"| 
 	
-		win = GUI.window.new("Shout'er", rect).front;
+		win = Window("Shout'er", rect).front;
 		win.alpha_(0.7);
 		win.view.background_(Color.clear);
 		win.alwaysOnTop_(true);
 		
-		txtView = GUI.textView.new(win, win.bounds.moveTo(0,0));
+		txtView = TextView(win, win.bounds.moveTo(0,0));
 		txtView.background_(Color.clear);
-		txtView.font_(GUI.font.new("Monaco", 32));
+		txtView.font_(Font("Monaco", 32));
+		txtView.resize_(2);
+		
+		width = rect.width;
 		
 		this.setMessage(message);
 	}
@@ -59,10 +62,10 @@ Shout {
 	*setMessage { |message| 
 		var messSize, fontSize;
 		messSize = message.size;
-		fontSize = (1.64 * width) / max(messSize, 32);
 		
 		defer { 
-			txtView.font_(GUI.font.new("Monaco", fontSize))
+			fontSize = (1.64 * txtView.bounds.width) / max(messSize, 32);
+			txtView.font_(Font("Monaco", fontSize))
 				.string_(message.asString);
 		};
 		this.animate;

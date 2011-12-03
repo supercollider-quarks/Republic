@@ -1,5 +1,13 @@
 /* Problems / todo : 
 
+
+** question - shareSynthDefs 
+	- should synthdefs from remote also be shared?
+	- can that be done without executing the code? 
+	- is this a security problem?
+	
+** 
+
 ** sometimes myServer does not stop on Cmd.period, 
 	maybe it appears not local by accident?
 	// test: 
@@ -13,8 +21,7 @@ thisProcess.stop;	// should stop sinosc.
 ** decouple server a little more 
 	- even if it does not boot, do everything else; 
 	when it has booted, inform the server from the lang.
-
-hasJoined
+	
 */
 
 Republic : SimpleRepublic {
@@ -75,7 +82,13 @@ Republic : SimpleRepublic {
 			serverPort = argServerPort ? serverPort;
 			this.initEventSystem;
 			// time.startListen;
-			this.joinStart;			
+			this.joinStart;
+			
+			fork { 
+				0.5.wait; 
+				"requesting synthdefs after joining!".postln; 
+				this.requestSynthDefs; 
+			};
 		}
 	}
 	
@@ -320,7 +333,13 @@ Republic : SimpleRepublic {
 		var args = [\instrument, name];
 		var synthDesc = lib.at(name);
 		
-		try { this.manipulateSynthDesc(name) };
+		try { 
+			this.manipulateSynthDesc(name);
+		//	"Republic - manipulated synthDesc: %.\n".postf(name);
+			
+		} { 
+		//	"Republic - could not manipulate synthDesc: % !\n".postf(name);
+		};
 		
 		// add the origin and SynthDef data to the metadata field
 		synthDesc.metadata = (sentBy: sentBy, bytes: bytes, sourceCode: sourceCode);
