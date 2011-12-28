@@ -41,6 +41,40 @@ a.tempo;
 
 a.rpcList
 
+///////////////////////
+
+r = Republic.new.makeDefault;
+r.join(\alice);
+r.time.update;
+r.time.clocks; // alice there?
+r.time.everyoneListenOnlyToMe;
+r.time.listeningTo;
+r.time.verbose = true;
+r.time.update;
+r.time.tempo;
+
+r.leave;
+r.time.clocks;
+
+
+// schedule something
+
+
+// this still crashes ..
+// time goes to zero..
+(
+SynthDef(\x, { |freq, sustain| Out.ar(0, XLine.kr(0.1, 0.0001, sustain, doneAction: 2) * SinOsc.ar(freq, 0.5pi)) }).add;
+Pbind(\freq, 810, \sustain, 0.5, \dur, 1, \instrument, \x, \server, r.s).play(r.time, quant:1);
+)
+
+
+// change the tempo
+r.time.everyoneListenOnlyToMe;
+r.time.myClock.update(2.5);
+r.time.sendClockSignal(\all);
+
+
+
 */
 
 RepublicStandardTime : ListeningClock {
@@ -51,8 +85,8 @@ RepublicStandardTime : ListeningClock {
 	var <>rpcList = #[\listenTo, \listenOnlyTo, \dontListenTo, \updateClock];
 	var responder;
 	
-	*new { |republic|
-		^super.new.initClocks(republic)	
+	*new { |republic, tempo, beats, seconds, queueSize=256|
+		^super.new(tempo, beats, seconds, queueSize).initClocks(republic)
 	}
 	
 	initClocks { |argRepublic|
@@ -140,7 +174,7 @@ RepublicStandardTime : ListeningClock {
 	}
 	
 	addClock { |key|
-		var myClock = this.myClock ? TempoClock.default; // use my clock as approximation
+		var myClock = TempoClock.default; // use my clock as approximation
 		var clock = ReferenceClock(myClock.tempo, myClock.elapsedBeats);
 		clocks.put(key, clock);
 		this.update;

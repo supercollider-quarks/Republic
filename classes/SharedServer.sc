@@ -201,8 +201,4 @@ SharedServer : Server {
 	
 }
 
-+ Nil { 
-	asTarget { ^Server.default.asTarget }
-}
-
 
