@@ -126,14 +126,14 @@ SharedServer : Server {
 	}
 	
 	getBuffers { |action| 
-		var dur = (options.numBuffers * options.blockSize / sampleRate * 5).postln;
+		var dur = (options.numBuffers * options.blockSize / sampleRate * 5);
 		var newbuffers = Array(32);
 		var resp = OSCresponder(nil, 'bufscan', { |time, resp, msg| 
 						var bufnum, frames, chans, srate; 
 						#bufnum, frames, chans, srate = msg.keep(-4); 
 						if (chans > 0) { 
 							newbuffers = newbuffers.add(
-								Buffer(this, frames, chans, srate, bufnum: bufnum).postln) 
+								Buffer(this, frames, chans, srate, bufnum: bufnum)) 
 						};
 					}).add;
 

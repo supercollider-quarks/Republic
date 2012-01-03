@@ -7,6 +7,8 @@ SimpleRepublic {
 	var <>verbose = false, <>private = false; // use this later to delegate traffic
 	var <skip, <resp, <broadcastWasOn, <presence;
 	
+	var <groups;
+	
 	classvar <>default;
 	
 	*new { |broadcastAddr, republicName = '/republic'|
@@ -25,9 +27,19 @@ SimpleRepublic {
 		addrs = ();
 		nameList = List.new;
 		presence = ();
+		
+		groups = ();
 
 		this.makeResponder; 
 		this.makeSkip; 
+	}
+	
+	addGroup { |name, names| groups.put(name, names) }
+	removeGroup { |name, names| groups.put(name, names) }
+	replaceGroupNames { |names| 
+		^names.collect { |name|
+			if (groups[name].notNil) { groups[name] } { name }
+		}.flat;
 	}
 	
 	canJoin {  |name|
@@ -125,12 +137,12 @@ SimpleRepublic {
 			if(newVal < 0) {
 				this.removeParticipant(key);
 				presence.removeAt(key);
-				(" --- % has just left the building. --->".format(key)).postln;
+				(" --- % has just left the building. --->".format(key)).repostln;
 			} { 
 				presence.put(key, newVal)
 			}
 		};
-		if(verbose) { presence.postln };
+		if(verbose) { presence.repostln };
 	}
 	
 	addParticipant { |key, addr|
@@ -155,7 +167,7 @@ SimpleRepublic {
 		} {
 			NetAddr.broadcastFlag = broadcastWasOn;
 		};
-		"\n\nRepublic: switched global NetAddr broadcast flag to %.\n".format(flag).postln;
+		"\n\nRepublic: switched global NetAddr broadcast flag to %.\n".format(flag).repostln;
 	}
 		
 	makeResponder {
@@ -171,7 +183,7 @@ SimpleRepublic {
 				if(this.hasJoined(otherNick).not) { 
 					addr = NetAddr(replyAddr.addr.asIPString, replyAddr.port);
 					this.addParticipant(otherNick, addr, otherID, extraData);
-					(" ---> % has joined the Republic. ---".format(otherNick)).postln;
+					(" ---> % has joined the Republic. ---".format(otherNick)).repostln;
 				};
 				presence.put(otherNick, graceCount);
 		}).add;
@@ -214,7 +226,7 @@ SimpleRepublic {
 				History.enter(codeStr, who);
 				if (codeStr.beginsWith(Shout.tag)) { 
 					defer { 
-						Shout((codeStr.drop(Shout.tag.size).reject(_ == $\n) + ("/" ++ who)).postcs) 
+						Shout((codeStr.drop(Shout.tag.size).reject(_ == $\n) + ("/" ++ who)).repostcs) 
 					}
 				}; 
 			}).add; 	
@@ -239,7 +251,7 @@ SimpleRepublic {
 	*dumpOSC { |flag = true|
 		thisProcess.recvOSCfunc = if(flag) { { |time, replyAddr, msg| 
 			if(#['status.reply', '/status.reply'].includes(msg[0]).not) {
-				"At time %s received message % from %\n".postf( time, msg, replyAddr )
+				"At time %s received message % from %\n".repostf( time, msg, replyAddr )
 			}  // post all incoming traffic except the server status messages
 			} } { nil }
 	}
@@ -250,30 +262,32 @@ SimpleRepublic {
 	
 	prSendWithDict { |dict, names, messages, latency|
 	//	var isServer = dict.choose.isKindOf(Server); 
-	//	if (isServer) { "prSendWithDict, server - incoming names: ".post; names.postcs; };
+	//	if (isServer) { "prSendWithDict, server - incoming names: ".repost; names.repostcs; };
 		names = names ? nickname; // send to myself if none is given 
 		
-	//	if (isServer) {"replaced names: ".post; names.postcs;};
+	//	if (isServer) {"replaced names: ".repost; names.repostcs;};
 		
 		
 		if(verbose) { "sent messages to: %.\nmessages: %\nlatency: %\n"
-				.postf(names, messages, latency)};
+				.repostf(names, messages, latency)};
 		if(names == \all) {
-	//	if (isServer) {"sending to all.".postln;};
+	//	if (isServer) {"sending to all.".repostln;};
 			
-	//		dict.postcs;
+	//		dict.repostcs;
 			dict.do { |recv| recv.sendBundle(latency, *messages) }
 		} {
-	//	if (isServer) { "names.asArray: ".post; };
+	//	if (isServer) { "names.asArray: ".repost; };
 			
-			names.asArray/*.postcs*/.do { |name|
+			names = this.replaceGroupNames(names.asArray);
+			
+			names.do { |name|
 				var recv;
 				if(name.isInteger) {
 					name = nameList.wrapAt(name + myNameIndex);
 				};
 				recv = dict.at(name);
 				if(recv.isNil) {
-					"% is currently absent.\n".postf(name)
+					"% is currently absent.\n".repostf(name)
 				} {
 					recv.sendBundle(latency, *messages)
 				};
@@ -292,7 +306,7 @@ SimpleRepublic {
 	}
 	
 	*getBroadcastIPs {
-		"Please use instead: NetAddr.getBroadcastIPs".postln;
+		"Please use instead: NetAddr.getBroadcastIPs".repostln;
 		^this.deprecated(thisMethod, NetAddr.findRespondingMethodFor(\getBroadcastIPs))
 	}
 	

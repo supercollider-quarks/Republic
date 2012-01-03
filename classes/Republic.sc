@@ -37,7 +37,9 @@ Republic : SimpleRepublic {
 	var <>onJoinServerAction;
 	// var <time;
 	
-	var <>usesRandIDs = true, <>usesSeparateState = true, <>postSource = true;
+	var <>usesRandIDs = true, <>usesSeparateState = true, <>postSource = false;
+	
+	var <synthDefNames;
 	
 	init {
 		super.init;
@@ -46,6 +48,7 @@ Republic : SimpleRepublic {
 		synthDefSendCmd =  republicName.asString ++ "/synthDef";
 		options = this.defaultServerOptions;
 		// time = RepublicStandardTime(this).permanent_(true).phaseWrap_(4);
+		synthDefNames = SortedList[];
 	}
 	
 	canJoin { |name, argClientID|
@@ -86,7 +89,7 @@ Republic : SimpleRepublic {
 			
 			fork { 
 				0.5.wait; 
-				"requesting synthdefs after joining!".postln; 
+				"requesting synthdefs after joining!".repostln; 
 				this.requestSynthDefs; 
 			};
 		}
@@ -100,7 +103,7 @@ Republic : SimpleRepublic {
 		try { servers.at(nickname).quit };
 		servers.keysValuesDo(this.removeServer(_));
 		
-		"servers: %\n".postf(servers);
+		"servers: %\n".repostf(servers);
 		clientID = nil;
 	//	time.stopListen;
 	//	servers = ();
@@ -109,12 +112,12 @@ Republic : SimpleRepublic {
 	}
 			
 	sendServer { |name ... args|
-		// "send server %\nmessages: %\n".postf(name, [args]);
+		// "send server %\nmessages: %\n".repostf(name, [args]);
 		this.prSendWithDict(servers, name, [args], latency)
 	}
 	
 	sendServerBundle { |latency, name ... args|
-		// "send server %\nmessages: %\n".postf(name, args);
+		// "send server %\nmessages: %\n".repostf(name, args);
 		this.prSendWithDict(servers, name, args, latency)
 	}
 	
@@ -178,8 +181,8 @@ Republic : SimpleRepublic {
 			server = this.makeNewServer(name, addr, port, config);
 		} {
 			this.displayServer(server);
-			"\nRepublic (%): server % already there - fine.\n".postf(nickname, name);
-			"You may still need to boot the server\n".postln;
+			"\nRepublic (%): server % already there - fine.\n".repostf(nickname, name);
+			"You may still need to boot the server\n".repostln;
 		};
 			
 		servers.put(name, server);
@@ -209,7 +212,7 @@ Republic : SimpleRepublic {
 			// make a new server representation
 			newServer = SharedServer.new(name, NetAddr(addr, port), clientID: clientID);
 			
-			"\nRepublic (%): new server added: %\n".postf(nickname, name);
+			"\nRepublic (%): new server added: %\n".repostf(nickname, name);
 			
 			if(name == nickname) {
 				newServer.options = options;
@@ -222,7 +225,7 @@ Republic : SimpleRepublic {
 				};		
 			} {
 				newServer.options = this.defaultServerOptions(config);
-				"\nRepublic (%): server % not my own, assume running.\n".postf(nickname, name);
+				"\nRepublic (%): server % not my own, assume running.\n".repostf(nickname, name);
 				newServer.serverRunning_(true);
 			};
 			
@@ -249,8 +252,8 @@ Republic : SimpleRepublic {
 	}
 	
 		// sharing synth defs - should be called after a new server is up.
-		
-	shareSynthDefs { | who |
+		// sendAll forces sending - we often lose synthdefs when persons leave.
+	shareSynthDefs { | who, sendAll = false |
 		fork {
 			rrand(0.0, 1.0).wait; 		// wait to distribute network traffic
 			this.synthDescs.do { |synthDesc|
@@ -261,11 +264,14 @@ Republic : SimpleRepublic {
 						sourceCode = synthDesc.metadata.at(\sourceCode);
 					};
 					
-					doSend = sentBy.notNil and: { bytes.notNil }
+					doSend = sendAll or: 
+					{ sentBy.notNil and: { bytes.notNil }
 							and: {
 								nickname == sentBy	// was me
 								or: { addrs.at(sentBy).isNil } // has left
 							};
+					};
+					
 					if(doSend) {
 						this.sendSynthDefBytes(who, synthDesc.name, bytes, sourceCode, false);
 						1.0.rand.wait; // distribute load
@@ -277,7 +283,7 @@ Republic : SimpleRepublic {
 	sendSynthDef { | who, synthDef, toServer = true |
 		this.sendSynthDefBytes(who, synthDef.name, 
 				synthDef.asBytes, synthDef.asCompileString, toServer);
-		if(verbose) { "Republic (%): sent synthdef % to %\n".postf(nickname, synthDef.name, who) };
+		if(verbose) { "Republic (%): sent synthdef % to %\n".repostf(nickname, synthDef.name, who) };
 	}
 	
 	sendSynthDefBytes { | who, defName, bytes, sourceCode, toServer = true |
@@ -286,7 +292,6 @@ Republic : SimpleRepublic {
 	}
 
 		// maybe these should be cached locally
-		// the gui asks for them often, and incoming 
 		// synthdefs could just go here directly.
 	synthDescs {
 		^SynthDescLib.global.synthDescs.select { |desc| 
@@ -296,25 +301,25 @@ Republic : SimpleRepublic {
 	
 	informServer { |fromSourceCode = false| 
 		var synthdescs = this.synthDescs;
-		"informing r.server % of % synthdefs.".format(this.myServer, synthdescs.size).postln;
+		"informing r.server % of % synthdefs.".format(this.myServer, synthdescs.size).repostln;
 			// interpret is unsafe
 		if (fromSourceCode) { 
-			"interpreting synthdefs: ".post;
+			"interpreting synthdefs: ".repost;
 			synthdescs.do { |desc| 
-				(desc.name.asCompileString ++ " ").post;
+				(desc.name.asCompileString ++ " ").repost;
 				desc.metadata[\sourceCode].interpret.add;
 			};		
-			"\n".postln; 
+			"\n".repostln; 
 			
 			^this;
 		};
-			"sending bytes of: ".post; 
+			"sending bytes of: ".repost; 
 			// using bytes should be safe.
 		synthdescs.do { |desc|
 			var whereFrom = desc.metadata[\sentBy];
 			var bytes = desc.metadata[\bytes];
 			if (bytes.notNil) { 
-				(desc.name.asCompileString ++ " ").post;
+				(desc.name.asCompileString ++ " ").repost;
 				this.myServer.sendMsg("/d_recv", bytes);
 			} { 
 				warn("//// Republic:informServer - no bytes in metaData for %."
@@ -322,7 +327,7 @@ Republic : SimpleRepublic {
 				
 			};
 		};
-		"\n".postln; 
+		"\n".repostln; 
 	}
 	
 	storeRemoteSynthDef { | sentBy, name, sourceCode, bytes |
@@ -335,27 +340,25 @@ Republic : SimpleRepublic {
 		
 		try { 
 			this.manipulateSynthDesc(name);
-		//	"Republic - manipulated synthDesc: %.\n".postf(name);
+		//	"Republic - manipulated synthDesc: %.\n".repostf(name);
 			
 		} { 
-		//	"Republic - could not manipulate synthDesc: % !\n".postf(name);
+		//	"Republic - could not manipulate synthDesc: % !\n".repostf(name);
 		};
 		
 		// add the origin and SynthDef data to the metadata field
 		synthDesc.metadata = (sentBy: sentBy, bytes: bytes, sourceCode: sourceCode);
 		
-//		// post a prototype event:	
-//		dict.at(name).controls.do { |ctl| 
-//			args = args.add(ctl.name.asSymbol).add((ctl.defaultValue ? 0.0).round(0.00001))
-//		};
-
-		"\n// SynthDef \"%\" added:".postf(name);
+		"\n// SynthDef \"%\" added:".repostf(name);
 		if(postSource) {
 			sourceCode = format("%.share", sourceCode);
 			if(sourceCode.find("\n").notNil) { sourceCode = format("(\n%\n);", sourceCode) };
-			"\n%\n".postf(sourceCode);
+			"\n%\n".repostf(sourceCode);
 		};
-		().putPairs(args).postcs;
+		
+		if (synthDefNames.includes(name).not) { 
+			synthDefNames.add(name.asSymbol);
+		};
 	}
 	
 	manipulateSynthDesc { | name |
@@ -403,7 +406,7 @@ Republic : SimpleRepublic {
 		
 		requestResp = OSCresponderNode(nil, \request, { | t, r, msg |
 			var sentBy = msg[1];
-			msg.postcs;
+			msg.repostcs;
 			if (msg[2] == \shareSynthDefs) { 
 				this.shareSynthDefs(sentBy);
 			};	
@@ -450,7 +453,7 @@ RepublicServer {
 	}
 
 	sendBundle { |time ... msgs|
-	//	"sendBundle".postln;
+	//	"sendBundle".repostln;
 		// possible optimize: if all wheres are the same, send them as one bundle
 		var serverNames = msgs.collect (this.findWhere(_));
 		
@@ -461,13 +464,13 @@ RepublicServer {
 	}
 	
 	sendMsg { |... msg|
-	//	"sendMsg".postln;
+	//	"sendMsg".repostln;
 		republic.sendServerBundle(nil, this.findWhere(msg), msg);
 	}
 		// supports numbers in namelist as well.
 	findWhere { |msg|
 		var indexWhere, where;
-	//	"findWhere - msg and index are : ".postln; msg.postcs;
+	//	"findWhere - msg and index are : ".repostln; msg.repostcs;
 		indexWhere = msg.indexOf(\where); 
 		if (indexWhere.isNil) {
 			^nil
@@ -509,7 +512,7 @@ RepublicServer {
 
 	doesNotUnderstand { |selector, args|
 		if (verbose) { 
-			"RepublicServer forwards message '%' with args % to myServer.\n".postf(selector, args);
+			"RepublicServer forwards message '%' with args % to myServer.\n".repostf(selector, args);
 		};
 		if (args.isNil) { 
 			^republic.myServer.perform(selector);
@@ -520,5 +523,87 @@ RepublicServer {
 	
 }
 
+
+
++ SynthDef {
+
+	share { | republic |
+		republic = republic ? Republic.default;
+		if(republic.isNil) {
+				////////////////////////////////////////////////// v
+			if(Main.versionAtMost(3, 3)) { this.memStore } { this.prAdd }
+		} {
+			republic.addSynthDef(this)
+		}
+	}
+	
+	*unshare { |name|
+		^this.notYetImplemented;
+	}
+	
+	/*	
+	*unshare { |name|
+		var republic = republic ? Republic.default;
+		if(republic.notNil) { 
+			republic.removeSynthDef(this)
+		}
+		
+	}*/
+	
+	add { this.share; }
+	
+		// temp hack, use try to keep backwards compatibility.
+	prAdd { arg libname, completionMsg, keepDef = true;
+		try {
+			var	servers;
+			this.asSynthDesc(libname ? \global, keepDef);
+			if(libname.isNil) { 
+				servers = Server.allRunningServers
+			} {
+				servers = SynthDescLib.getLib(libname).servers
+			};
+			this.sendOrLoad(servers, completionMsg);
+		} {
+			var	lib, desc = this.asSynthDesc(libname, keepDef);
+			libname ?? { libname = \global };
+			lib = SynthDescLib.getLib(libname);
+			lib.servers.do { |each|
+				each.value.sendMsg("/d_recv", this.asBytes, completionMsg.value(each))
+			};
+		}
+	}
+
+	store { this.prStore.share; }
+	
+		// temp hack
+	prStore { arg libname=\global, dir(synthDefDir), completionMsg, mdPlugin;
+		var lib = SynthDescLib.getLib(libname);
+		var file, path = dir ++ name ++ ".scsyndef";
+		if(metadata.falseAt(\shouldNotSend)) {
+			protect {
+				var bytes, desc;
+				file = File(path, "w");
+				bytes = this.asBytes;
+				file.putAll(bytes);
+				file.close;
+				lib.read(path);
+				lib.servers.do { arg server;
+					server.value.sendMsg("/d_recv", bytes, completionMsg)
+				};
+				desc = lib[this.name.asSymbol];
+				desc.metadata = metadata;
+				SynthDesc.populateMetadataFunc.value(desc);
+				desc.writeMetadata(path);
+			} {
+				file.close
+			}
+		} {
+			lib.read(path);
+			lib.servers.do { arg server;
+				this.loadReconstructed(server, completionMsg);
+			};
+		};
+	}
+}
 
 

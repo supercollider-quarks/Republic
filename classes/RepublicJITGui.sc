@@ -1,6 +1,3 @@
-/*
-use tab to send shout or chat messages
-*/
 
 RepublicGui : JITGui {
 	var <nicknameView, <idView, <privateBtn, 
@@ -10,7 +7,7 @@ RepublicGui : JITGui {
 	<synthdefView;
 	var resp, heights;
 
-	*new { |object, numItems = 12, parent, bounds, makeSkip = true, options = #[]| 
+	*new { |object, numItems = 12, parent, bounds, makeSkip = true, options = #[]|
 		^super.new(nil, numItems, parent, bounds, makeSkip, options)
 			.object_(object);
 	}
@@ -36,6 +33,7 @@ RepublicGui : JITGui {
 		var currTop = parent.bounds.bottom;
 		parent.bounds = parent.bounds.height_(newheight).bottom_(currTop);
 	}
+	
 	makeViews {
 		
 		var lifeComp;
@@ -46,12 +44,12 @@ RepublicGui : JITGui {
 		
 		countView = StaticText(zone, 230@20).string_("0 citizens, 0 servers, 0 synthdefs")
 			.font_(Font("Helvetica", 14))
-			.align_(\center);	
+			.align_(\center);
 
 
 
 		StaticText(zone, 57@20).string_("show:")
-			.align_(\center);	
+			.align_(\center);
 
 		Button(zone, Rect(0,0, 57, 20))
 			.states_([["history"],["history", Color.black, skin.onColor]])
@@ -114,7 +112,14 @@ RepublicGui : JITGui {
 
 		Button(zone, Rect(0,0, 57, 20))
 			.states_([["share"]])
-			.action_({ |b| try { object.shareSynthDefs; } });
+			.action_({ |b, mod| 
+				if (mod.isAlt) { 
+					"sending all synthdefs!\n".postln;
+					try { object.shareSynthDefs(sendAll: true); };
+				} {
+					try { object.shareSynthDefs; };
+				}
+			});
 
 
 		StaticText(zone, 57@20).string_("examples:")
@@ -252,7 +257,8 @@ RepublicGui : JITGui {
 		if (object.isKindOf(Republic)) { 
 			state.putPairs([
 				\id, object.clientID, 
-				\numSynthDefs, object.synthDescs.size, 
+				\numSynthDefs, object.synthDefNames.size, 
+				\groupNames, object.groups.keys.asArray.sort,
 				\showNames, names.collect { |name| 
 					name.asString + ":" + (object.allClientIDs[name] ? "")
 				}
@@ -289,10 +295,10 @@ RepublicGui : JITGui {
 			};
 		};
 
-			// object is a republic:
+			// object is still the same republic:
 
 		if (newState[\numSynthDefs] != prevState[\numSynthDefs] or: 
-			{ newState[\numCitizens] != prevState[\numCitizens]}) {
+			{ newState[\numCitizens] != prevState[\numCitizens] }) {
 			countView.string = "% citizens, % servers, % synthdefs"
 				.format(newState[\numCitizens], newState[\numServers], newState[\numSynthDefs]);
 		};
@@ -303,7 +309,7 @@ RepublicGui : JITGui {
 		}; 
 		
 		if (newState[\private] != prevState[\private]) { 
-			privateBtn.value = newState[\private]; 
+			privateBtn.value = newState[\private].binaryValue; 
 		};
 		
 		if (newState[\showNames] != prevState[\showNames]) { 
