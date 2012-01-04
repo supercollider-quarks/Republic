@@ -222,8 +222,10 @@ SimpleRepublic {
 		if (useShout) { 
 			OSCresponder(nil, '/hist', {|t,r,msg| 
 				var who = msg[1];
-				var codeStr = msg[2].asString;
-				History.enter(codeStr, who);
+				var codeStr = msg[2].asString; 
+				
+				if (private.not) { History.enter(codeStr, who); };
+				
 				if (codeStr.beginsWith(Shout.tag)) { 
 					defer { 
 						Shout((codeStr.drop(Shout.tag.size).reject(_ == $\n) + ("/" ++ who)).repostcs) 
