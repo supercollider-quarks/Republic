@@ -115,9 +115,9 @@ RepublicGui : JITGui {
 			.action_({ |b, mod| 
 				if (mod.isAlt) { 
 					"sending all synthdefs!\n".postln;
-					try { object.shareSynthDefs(sendAll: true); };
+					object.shareSynthDefs(sendAll: true);
 				} {
-					try { object.shareSynthDefs; };
+					object.shareSynthDefs;
 				}
 			});
 

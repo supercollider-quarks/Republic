@@ -20,20 +20,31 @@ HistoryRepGui : JITGui {
 		} { 
 			defPos = skin.margin;
 		};
-		minSize = 300 @ 400;
+		minSize = 300 @ 400;	// calculate later
 	//	"minSize: %\n".postf(minSize);
 	}
 
 	makeViews { |options|
-		var font, flow;
+		var font, flow, listViewHeight = 230;
 
-		font = Font("Osaka", 9);				////
+		font = Font("Osaka", 9);
 		flow = zone.addFlowLayout(2@2, 1@1);
+		
+		// this should move to JITGui, 
+		// as it is useful for many JITGuis. 
+		if (hasWindow.not) { 
+			nameView = DragBoth(zone, Rect(0,0, zone.bounds.width - 4, skin.buttonHeight))
+				// .font_(skin.font)
+				.align_(\center)
+				.receiveDragHandler_({ arg obj; this.object = View.currentDrag });
+			listViewHeight = listViewHeight - (skin.buttonHeight + 2);
+		};
+		
 		this.name_("History");
 				
 		filters = [\all, ""];
 		
-		textV = TextView(zone, Rect(0, 0, (zone.bounds.width - 4).postln, numItems * 12 + 2))
+		textV = TextView(zone, Rect(0, 0, (zone.bounds.width - 4), 148))
 			.string_("")
 			.enterInterpretsSelection_(false)
 			.keyDownAction_({ |txvw, char, mod, uni, keycode|
@@ -43,7 +54,8 @@ HistoryRepGui : JITGui {
 				};
 			})
 			.resize_(2);
-
+		textV.bounds.postln;
+		
 			// to do: disable if history is not current!
 		startBut = Button(zone, Rect(0, 0, 50, 20)) ////
 			.states_([ ["start"], ["end"]])
@@ -100,7 +112,7 @@ HistoryRepGui : JITGui {
 			
 			};
 		
-		listV = ListView(zone, bounds.copy.insetBy(2).height_(230))
+		listV = ListView(zone, bounds.copy.insetBy(2).height_(listViewHeight))
 			.font_(font)
 			.items_([])
 			.resize_(5)
@@ -128,9 +140,7 @@ HistoryRepGui : JITGui {
 					"execute line from history failed.".postln;
 				};
 			});
-		try { parent.name_("History") };
-		this.checkUpdate;
-	
+		this.checkUpdate;	
 	}
 
 	getState { 
@@ -156,7 +166,8 @@ HistoryRepGui : JITGui {
 		listV.items = [];	
 	}
 
-		// these should move to JITGui in general
+		// these three should move to JITGui in general, 
+		// to simplify the checkUpdate methods
 	updateFunc { |newState, key, func| 
 		var val = newState[key];
 		if (val != prevState[key]) { func.value(val) }
@@ -174,6 +185,7 @@ HistoryRepGui : JITGui {
 		
 	checkUpdate { 
 		var newState = this.getState;
+		var newIndex, selectedLine, linesToShow, keys;
 		
 		if (newState == prevState) { ^this }; 
 		
@@ -196,8 +208,6 @@ HistoryRepGui : JITGui {
 		
 			// could be factoerd a bit more
 		if (newState[\hasMovedOn] or: { newState[\numLines] != prevState[\numLines]}) { 
-
-			var newIndex, selectedLine, linesToShow, keys;
 						
 			keys = [\all] ++ object.keys.asArray.sort;
 			keyPop.items_(keys);
