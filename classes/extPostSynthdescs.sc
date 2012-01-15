@@ -27,16 +27,19 @@
 	// build a postable string example event for a synthdesc 
 	exampleEventString { |excludeNames = #[\out], linePerPair = true, numIndents = 0| 
 		var nl = if (linePerPair, "\n", "");
-		var indents = if (numIndents == 0) { "" } { "\t".dup(numIndents).join };
-		var space = if (linePerPair, "\t", " ");
-		var str = "( %instrument: %" .format(indents, name.asCompileString); /*)*/ // bracket matching
+		var firstIndent = "\t".dup(numIndents).join;
+		var lineIndents = if (linePerPair, { "\t".dup(numIndents + 1) }, " ").join;
+		var space = if (linePerPair) { "\t" } { " " };
+		var str = "%(%'instrument': %" .format(firstIndent, space, name.asSymbol.asCompileString); /*)*/ // bracket matching
 		
 		this.defaultNamesVals.pairsDo { |parname, val|
-			str = str ++ (",%%%%: %".format(indents, nl, space, parname.asCompileString, val.unbubble));
+			if (excludeNames.includes(parname).not) { 
+				str = str ++ (",%%%: %".format(nl, lineIndents, parname.asCompileString, val.unbubble));
+			};
 		};
 		
 		/*(*/ // for bracket matching
-		str = str ++ "%).play;\n".format(nl);
+		str = str ++ "%%).play;\n".format(nl, firstIndent);
 		^str;
 	}
 	
@@ -96,11 +99,14 @@
 		var allStr = title ++ "\n\n";
 		
 		var eventStrings = this.synthDescs.asArray.sort({ |a, b| a.name < b.name })
-			.collect (_.exampleEventString(linePerPair: true, numIndents: 1)); 	
+			.collect (_.exampleEventString(linePerPair: true, numIndents: 2)); 	
 		eventStrings.do { |evStr|
 			allStr = allStr 
 			++ "(\nTdef(\\" ++ { rrand(97, 122).asAscii }.dup(5).join ++ ",{ \n"
+			++ "\trrand(13, 34).do { |i|\n"
 			++ evStr
+			++ "\n\t\t1.wait;\n"
+			++ "\t};\n"
 			++ "}).play;\n);\n"
 		};
 		
