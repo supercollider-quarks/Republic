@@ -5,7 +5,7 @@
 		// key may be simply a symbol, or an association of a symbol and a server name
 		var res, server, dict;
 		if(key.isArray) { 
-			^[key, object].flop.postcs.collect { |pair| this.new(*pair) }
+			^[key, object].flop.collect { |pair| this.new(*pair) }
 		};
 		if(key.isKindOf(Association)) {
 			server = Server.named.at(key.value);
