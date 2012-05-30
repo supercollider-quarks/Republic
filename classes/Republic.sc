@@ -237,7 +237,10 @@ Republic : SimpleRepublic {
 		var op = SharedServerOptions.fromConfig(config);
 		var maxNumClients = (maxID + 1);
 		if(usesSeparateState) {
-			op.numAudioBusChannels = 128 * maxNumClients;
+			Main.versionAtLeast(3, 5).if({
+				op.numPrivateAudioBusChannels = 128 * maxNumClients;
+			}, {
+				op.numAudioBusChannels = 128 * maxNumClients;			});
 			op.numControlBusChannels = 4096 * maxNumClients;
 			op.memSize = 8192 * maxNumClients;
 			op.numClients = maxID;
