@@ -59,7 +59,7 @@ SimpleRepublic {
 	joinStart { 
 		this.statusFunc;
 		skip.play;
-		fork { 0.5.wait; this.checkJoined }
+		fork( { 0.5.wait; this.checkJoined }, AppClock)
 	}
 		
 		// clientID for subclass...

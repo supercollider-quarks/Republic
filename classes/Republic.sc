@@ -86,12 +86,11 @@ Republic : SimpleRepublic {
 			this.initEventSystem;
 			// time.startListen;
 			this.joinStart;
-			
-			fork { 
+			fork ({ 
 				0.5.wait; 
 				"requesting synthdefs after joining!".repostln; 
 				this.requestSynthDefs; 
-			};
+			}, AppClock);
 		}
 	}
 	
@@ -257,7 +256,7 @@ Republic : SimpleRepublic {
 		// sharing synth defs - should be called after a new server is up.
 		// sendAll forces sending - we often lose synthdefs when persons leave.
 	shareSynthDefs { | who, sendAll = false |
-		fork {
+		fork ({
 			rrand(0.0, 1.0).wait; 		// wait to distribute network traffic
 			this.synthDescs.do { |synthDesc|
 					var sentBy, bytes, doSend, sourceCode;
@@ -280,7 +279,7 @@ Republic : SimpleRepublic {
 						1.0.rand.wait; // distribute load
 					}
 			}
-		}
+		}, AppClock)
 	}
 	
 	sendSynthDef { | who, synthDef, toServer = true |
