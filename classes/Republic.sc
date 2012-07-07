@@ -200,7 +200,7 @@ Republic : SimpleRepublic {
 		defer { try { server.makeGui } };	
 	}
 		
-	makeNewServer { | name, addr, port, config |
+	makeNewServer { | name, addr, port, config, notify = true |
 			
 			var newServer, serverOptions;
 					
@@ -220,14 +220,16 @@ Republic : SimpleRepublic {
 					0.5.wait; 
 					this.informServer;
 					0.5.wait;
-					onJoinServerAction.value(this, newServer) 
+					onJoinServerAction.value(this, newServer);
 				};		
 			} {
 				newServer.options = this.defaultServerOptions(config);
 				"\nRepublic (%): server % not my own, assume running.\n".repostf(nickname, name);
 				newServer.serverRunning_(true);
+				newServer.startAliveThread;
 			};
 			
+			newServer.notify = notify;
 			newServer.latency = latency; // not sure if compatible
 			^newServer
 	}

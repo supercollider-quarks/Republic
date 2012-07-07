@@ -36,14 +36,18 @@ RepublicServerGui : JITGui {
 	
 	object_ { |obj| 
 		// should be used once only ATM
+		var win;
 		if (obj.isNil) {
 			homeZone.children.do(_.remove);
 		} { 
 			if (obj != object) { 
 				homeZone.children.do(_.remove);
-				try { obj.myServer.window.close };
-				obj.myServer.makeGui(homeZone);
-			};
+				try { win = obj.myServer.window };
+				if(win.notNil) {
+					win.close;
+					obj.myServer.makeGui(homeZone);
+				}
+			}
 		};
 		object = obj;
 	}
