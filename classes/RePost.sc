@@ -44,7 +44,7 @@ RePost {
 + Object { 
 	repost { this.asString.repost }
 	repostln { this.asString.repostln; }
-	repostc { this.asString.postcR }
+	repostc { this.asString.postc }
 	repostcln { this.asString.repostcln; }
 	repostcs { this.asCompileString.repostln }
 }

@@ -229,7 +229,12 @@ Republic : SimpleRepublic {
 				newServer.startAliveThread;
 			};
 			
-			newServer.notify = notify;
+		try { newServer.notify = notify; } { 
+			inform("Republic:makeNewServer - could not set server notification.");
+			// trying older style: 
+			newServer.sendBundle(nil, ['/error', 0], ['/notify', 1]);
+		};
+		
 			newServer.latency = latency; // not sure if compatible
 			^newServer
 	}
@@ -398,7 +403,9 @@ Republic : SimpleRepublic {
 	}
 
 	initEventSystem { 
-		synthDefResp = OSCresponderNode(nil, synthDefSendCmd, { | t, r, msg |
+		// go back from OSCresponderNode to OSCresponder - get rid of Frame error
+		// that happens with lots of OSC traffic. 
+		synthDefResp = OSCresponder(nil, synthDefSendCmd, { | t, r, msg |
 				
 				var sentBy = msg[1];
 				var name = msg[2];
@@ -408,7 +415,7 @@ Republic : SimpleRepublic {
 				this.storeRemoteSynthDef(sentBy, name, sourceCode, bytes)
 			}).add;
 		
-		requestResp = OSCresponderNode(nil, \request, { | t, r, msg |
+		requestResp = OSCresponder(nil, \request, { | t, r, msg |
 			var sentBy = msg[1];
 			msg.repostcs;
 			if (msg[2] == \shareSynthDefs) { 
