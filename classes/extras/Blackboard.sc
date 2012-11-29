@@ -13,9 +13,13 @@ Blackboard {
 			board: Color(0.1, 0.3, 0.1),
 			passive: Color.grey(0.7),
 			waiting: Color(1, 1, 0.75), 
-			active: Color.white(0.95),
-			font:  Font("ChalkDuster", 14)
+			active: Color.white(0.95)
 		);
+		StartUp.add {
+			if(colors[\font].isNil and: { GUI.scheme.notNil }) {
+				colors[\font] = Font("ChalkDuster", 14);
+			};
+		};
 	}
 	
 	*paintListener { 
