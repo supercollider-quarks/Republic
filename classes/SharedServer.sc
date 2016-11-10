@@ -126,7 +126,7 @@ Others have to call initTree as well, e.g. by hitting Cmd-Period.\n".postf(name)
 	}
 
 	getBuffers { |action|
-		var dur = (options.numBuffers * options.blockSize / sampleRate * 5);
+		var dur = (options.numBuffers * options.blockSize / this.sampleRate * 5);
 		var newbuffers = Array(32);
 		var resp = OSCresponder(nil, 'bufscan', { |time, resp, msg|
 			var bufnum, frames, chans, srate;
